@@ -1,0 +1,9 @@
+{
+  "name": "Parthenon Planner",
+  "description": "Um planejador de estudos completo com calendário interativo, gestão de matérias e cronômetro de blocos de 5 minutos.",
+  "icon": "logo.png",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
