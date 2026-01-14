@@ -59,17 +59,23 @@ const App: React.FC = () => {
   };
 
   const handleFetchError = (err: any) => {
+    console.error('App Fetch Error Detailed:', JSON.stringify(err, null, 2));
+    
     const isNetworkError = err?.message?.includes('fetch') || !navigator.onLine;
-    const msg = isNetworkError 
+    let msg = isNetworkError 
       ? 'Falha de conexão: Verifique sua internet.' 
       : (err?.message || 'Erro ao sincronizar dados.');
+
+    if (err?.code === '42P01') {
+      msg = 'Tabela "user_states" não encontrada no Supabase.';
+    }
+
     setSyncError(msg);
     if (isNetworkError) {
       showNotification(msg, 'info');
     } else {
       showNotification(msg, 'error');
     }
-    console.error('Fetch Error:', err);
   };
 
   useEffect(() => {
@@ -344,7 +350,7 @@ const App: React.FC = () => {
             </div>
             <h1 className="text-lg font-black tracking-tighter text-athena-teal dark:text-white uppercase leading-none">Parthenon<br/><span className="text-athena-coral text-sm">Planner</span></h1>
           </div>
-          <button onClick={toggleTheme} className="p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-2 border-slate-400 dark:border-slate-700 shadow-sm transition-colors">
+          <button onClick={toggleTheme} className="p-2 rounded-xl bg-white dark:bg-slate-900 text-slate-950 dark:text-slate-300 border-2 border-slate-300 dark:border-slate-800 shadow-xl transition-colors">
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
         </div>
