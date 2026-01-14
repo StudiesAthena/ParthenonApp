@@ -246,7 +246,6 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, onNotific
 
     setActionLoading(true);
     try {
-      // 1. Extrair path do storage de forma limpa
       let storagePath = null;
       try {
         const urlObj = new URL(file.url);
@@ -384,7 +383,6 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, onNotific
 
     setActionLoading(true);
     try {
-      // 1. Buscar todos os arquivos desta atividade para deletar do Storage
       const { data: activityFiles } = await supabase
         .from('group_files')
         .select('url')
@@ -405,7 +403,6 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, onNotific
         }
       }
 
-      // 2. Deletar registros do banco
       await supabase.from('group_files').delete().eq('activity_id', id);
       const { error } = await supabase.from('group_activities').delete().eq('id', id);
       if (error) throw error;
@@ -446,7 +443,6 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, onNotific
 
   return (
     <div className="space-y-6 animate-fade-in pb-16 relative max-w-6xl mx-auto">
-      
       {/* Modais de Gerenciamento */}
       {renameFileId && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[150] flex items-center justify-center p-4">
@@ -676,7 +672,6 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, onNotific
                                 <button onClick={() => setFileActionId(fileActionId === file.id ? null : file.id)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-athena-teal hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg transition-all"><MoreVertical size={18} /></button>
                               </div>
 
-                              {/* Menu de Gerenciamento do Arquivo */}
                               {fileActionId === file.id && (
                                 <div className="absolute top-12 right-4 z-20 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2 min-w-[150px] animate-fade-in flex flex-col gap-1">
                                   <button onClick={() => { setFileInfoId(fileInfoId === file.id ? null : file.id); setFileActionId(null); }} className="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-black uppercase text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"><Info size={14} className="text-athena-teal"/> Detalhes</button>
@@ -691,7 +686,6 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, onNotific
                                 </div>
                               )}
 
-                              {/* Painel de Detalhes */}
                               {fileInfoId === file.id && (
                                 <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-1 duration-200 space-y-3">
                                    <div className="flex justify-between items-center">
