@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Bird, Mail, Lock, Loader2, ArrowRight, Sun, Moon } from 'lucide-react';
+// Added missing AlertCircle import from lucide-react
+import { Bird, Mail, Lock, Loader2, ArrowRight, Sun, Moon, CheckCircle, Info, AlertCircle } from 'lucide-react';
 
 const SUPABASE_URL = 'https://wajmeqsfcgruhuxasuux.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_CvIBWIOhrKX3kGNKNwzlFg_7fUZzOUk';
@@ -17,7 +18,7 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info', text: string, title?: string } | null>(null);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,11 +27,21 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme }) => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ 
+          email: email.toLowerCase().trim(), 
+          password 
+        });
         if (error) throw error;
-        setMessage({ type: 'success', text: 'Conta criada! Verifique seu e-mail para confirmar.' });
+        setMessage({ 
+          type: 'success', 
+          title: 'Quase lá!',
+          text: 'Enviamos um e-mail de confirmação para você. Por favor, verifique sua caixa de entrada (e o spam) para ativar sua conta.' 
+        });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ 
+          email: email.toLowerCase().trim(), 
+          password 
+        });
         if (error) throw error;
       }
     } catch (error: any) {
@@ -43,7 +54,6 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme }) => {
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col items-center justify-center p-4 relative transition-colors duration-300">
       
-      {/* Botão de Tema - Posicionamento fixo para evitar cortes em qualquer resolução */}
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleTheme}
@@ -68,63 +78,86 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme }) => {
             </p>
           </div>
 
-          <form onSubmit={handleAuth} className="space-y-4">
-            <div className="relative">
-              <Mail size={18} className="absolute left-4 top-4 text-slate-400" />
-              <input
-                type="email"
-                placeholder="Seu e-mail"
-                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-400 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="relative">
-              <Lock size={18} className="absolute left-4 top-4 text-slate-400" />
-              <input
-                type="password"
-                placeholder="Sua senha"
-                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-400 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            {message && (
-              <div className={`p-4 rounded-xl text-xs font-black uppercase text-center border-2 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-rose-50 text-rose-800 border-rose-300'}`}>
-                {message.text}
+          {message?.type === 'success' ? (
+            <div className="space-y-6 text-center animate-fade-in">
+              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner border-2 border-emerald-200">
+                <CheckCircle size={40} />
               </div>
-            )}
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-slate-950 dark:text-white uppercase tracking-tighter">{message.title}</h3>
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-400 leading-relaxed">
+                  {message.text}
+                </p>
+              </div>
+              <button 
+                onClick={() => { setIsSignUp(false); setMessage(null); }}
+                className="w-full py-4 bg-athena-teal text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:opacity-90 transition-all text-[11px]"
+              >
+                Voltar para o Login
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleAuth} className="space-y-4">
+              <div className="relative">
+                <Mail size={18} className="absolute left-4 top-4 text-slate-400" />
+                <input
+                  type="email"
+                  placeholder="Seu e-mail"
+                  className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-400 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-amber-500 text-slate-900 rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-amber-400 active:scale-95 transition-all flex items-center justify-center gap-2 border-b-4 border-amber-600 text-sm"
-            >
-              {loading ? <Loader2 className="animate-spin" size={20} /> : (
-                <>
-                  {isSignUp ? 'Criar Minha Conta' : 'Entrar no Sistema'}
-                  <ArrowRight size={20} />
-                </>
+              <div className="relative">
+                <Lock size={18} className="absolute left-4 top-4 text-slate-400" />
+                <input
+                  type="password"
+                  placeholder="Sua senha"
+                  className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-400 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {message && message.type !== 'success' && (
+                <div className={`p-4 rounded-xl text-xs font-black uppercase text-center border-2 flex items-center gap-3 ${message.type === 'error' ? 'bg-rose-50 text-rose-800 border-rose-300' : 'bg-blue-50 text-blue-800 border-blue-300'}`}>
+                  {/* Fixed missing AlertCircle name by adding it to imports */}
+                  {message.type === 'error' ? <AlertCircle size={16}/> : <Info size={16}/>}
+                  {message.text}
+                </div>
               )}
-            </button>
-          </form>
 
-          <div className="mt-10 text-center border-t border-slate-300 dark:border-slate-800 pt-8">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-[10px] font-black uppercase text-slate-600 dark:text-slate-400 hover:text-athena-coral transition-colors tracking-widest"
-            >
-              {isSignUp ? 'Já possui uma conta? Acesse aqui' : 'Não tem conta? Registre-se agora'}
-            </button>
-          </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-amber-500 text-slate-900 rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-amber-400 active:scale-95 transition-all flex items-center justify-center gap-2 border-b-4 border-amber-600 text-sm"
+              >
+                {loading ? <Loader2 className="animate-spin" size={20} /> : (
+                  <>
+                    {isSignUp ? 'Criar Minha Conta' : 'Entrar no Sistema'}
+                    <ArrowRight size={20} />
+                  </>
+                )}
+              </button>
+
+              <div className="mt-8 text-center border-t border-slate-300 dark:border-slate-800 pt-8">
+                <button
+                  type="button"
+                  onClick={() => { setIsSignUp(!isSignUp); setMessage(null); }}
+                  className="text-[10px] font-black uppercase text-slate-600 dark:text-slate-400 hover:text-athena-coral transition-colors tracking-widest"
+                >
+                  {isSignUp ? 'Já possui uma conta? Acesse aqui' : 'Não tem conta? Registre-se agora'}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
         
         <p className="text-center mt-8 text-[10px] font-black uppercase text-slate-500 tracking-widest opacity-60">
-          Parthenon • Disciplina é Liberdade
+          Athena Studies • Domine seu Futuro
         </p>
       </div>
     </div>
