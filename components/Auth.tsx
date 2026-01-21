@@ -1,19 +1,16 @@
 
 import React, { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-// Added missing AlertCircle import from lucide-react
-import { Bird, Mail, Lock, Loader2, ArrowRight, Sun, Moon, CheckCircle, Info, AlertCircle } from 'lucide-react';
-
-const SUPABASE_URL = 'https://wajmeqsfcgruhuxasuux.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_CvIBWIOhrKX3kGNKNwzlFg_7fUZzOUk';
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+import { supabase } from '../supabase';
+// Adicionado ArrowLeft para o botão de voltar
+import { Bird, Mail, Lock, Loader2, ArrowRight, Sun, Moon, Info, AlertCircle, Send, Inbox, Plus, ArrowLeft } from 'lucide-react';
 
 interface AuthProps {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
+  onBackToLanding: () => void; // Nova prop para voltar à Landing Page
 }
 
-export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme }) => {
+export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding }) => {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -34,8 +31,8 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme }) => {
         if (error) throw error;
         setMessage({ 
           type: 'success', 
-          title: 'Quase lá!',
-          text: 'Enviamos um e-mail de confirmação para você. Por favor, verifique sua caixa de entrada (e o spam) para ativar sua conta.' 
+          title: 'Verifique seu E-mail',
+          text: `Enviamos um link de ativação para ${email.toLowerCase()}. Clique no link para liberar seu acesso ao Parthenon.` 
         });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ 
@@ -54,6 +51,17 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme }) => {
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col items-center justify-center p-4 relative transition-colors duration-300">
       
+      {/* Botões de Navegação Superior */}
+      <div className="fixed top-6 left-6 z-50">
+        <button 
+          onClick={onBackToLanding}
+          className="p-3 rounded-2xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-2 border-slate-400 dark:border-slate-800 shadow-xl hover:text-athena-teal hover:scale-110 active:scale-95 transition-all flex items-center justify-center gap-2 font-black uppercase text-[10px] tracking-widest px-5"
+          title="Voltar para a Landing Page"
+        >
+          <ArrowLeft size={16} /> <span className="hidden sm:inline">Voltar</span>
+        </button>
+      </div>
+
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleTheme}
@@ -65,67 +73,93 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme }) => {
       </div>
 
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border-2 border-slate-400 dark:border-slate-800 shadow-2xl p-8 md:p-12 animate-fade-in">
-          <div className="flex flex-col items-center mb-10">
-            <div className="p-4 bg-athena-coral rounded-2xl text-white shadow-xl mb-6">
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border-2 border-slate-400 dark:border-slate-800 shadow-2xl p-8 md:p-12 animate-fade-in overflow-hidden relative">
+          
+          {/* Decorative background element for success */}
+          {message?.type === 'success' && (
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-athena-teal/5 rounded-full blur-3xl" />
+          )}
+
+          <div className="flex flex-col items-center mb-10 relative z-10">
+            <div className="p-4 bg-athena-coral rounded-2xl text-white shadow-xl mb-6 transform hover:rotate-6 transition-transform">
               <Bird size={40} />
             </div>
             <h1 className="text-3xl font-black text-athena-teal dark:text-white uppercase tracking-tighter text-center leading-none">
               Parthenon<br/><span className="text-athena-coral">Planner</span>
             </h1>
             <p className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-[0.2em] mt-5 text-center leading-relaxed w-full">
-              Seu organizador de estudos personalizado
+              {isSignUp ? 'Crie sua conta de estudante' : 'Acesse seu painel de estudos'}
             </p>
           </div>
 
           {message?.type === 'success' ? (
-            <div className="space-y-6 text-center animate-fade-in">
-              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner border-2 border-emerald-200">
-                <CheckCircle size={40} />
+            <div className="space-y-8 text-center animate-fade-in relative z-10">
+              <div className="relative mx-auto w-24 h-24">
+                <div className="absolute inset-0 bg-athena-teal/20 rounded-full animate-ping" />
+                <div className="relative w-24 h-24 bg-athena-teal text-white rounded-full flex items-center justify-center shadow-2xl border-4 border-white dark:border-slate-800">
+                  <Mail size={40} className="animate-bounce" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-black text-slate-950 dark:text-white uppercase tracking-tighter">{message.title}</h3>
+
+              <div className="space-y-4">
+                <h3 className="text-2xl font-black text-slate-950 dark:text-white uppercase tracking-tighter">{message.title}</h3>
                 <p className="text-sm font-bold text-slate-600 dark:text-slate-400 leading-relaxed">
                   {message.text}
                 </p>
               </div>
+
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700 space-y-3">
+                <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Dicas Importantes:</p>
+                <ul className="text-left space-y-2">
+                  <li className="flex items-start gap-2 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    <div className="mt-1 w-1.5 h-1.5 rounded-full bg-athena-coral shrink-0" />
+                    Verifique sua pasta de <b>Spam ou Promoções</b>.
+                  </li>
+                  <li className="flex items-start gap-2 text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    <div className="mt-1 w-1.5 h-1.5 rounded-full bg-athena-coral shrink-0" />
+                    O e-mail pode levar até 2 minutos para chegar.
+                  </li>
+                </ul>
+              </div>
+
               <button 
                 onClick={() => { setIsSignUp(false); setMessage(null); }}
-                className="w-full py-4 bg-athena-teal text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:opacity-90 transition-all text-[11px]"
+                className="w-full py-4 bg-slate-950 dark:bg-white text-white dark:text-slate-950 rounded-2xl font-black uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all text-[11px] flex items-center justify-center gap-2"
               >
-                Voltar para o Login
+                <ArrowRight size={16} className="rotate-180" /> Voltar para o Login
               </button>
             </div>
           ) : (
-            <form onSubmit={handleAuth} className="space-y-4">
-              <div className="relative">
-                <Mail size={18} className="absolute left-4 top-4 text-slate-400" />
-                <input
-                  type="email"
-                  placeholder="Seu e-mail"
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-400 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+            <form onSubmit={handleAuth} className="space-y-5 relative z-10">
+              <div className="space-y-4">
+                <div className="relative group">
+                  <Mail size={18} className="absolute left-4 top-4 text-slate-400 group-focus-within:text-athena-teal transition-colors" />
+                  <input
+                    type="email"
+                    placeholder="E-mail Acadêmico"
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white shadow-inner"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="relative group">
+                  <Lock size={18} className="absolute left-4 top-4 text-slate-400 group-focus-within:text-athena-teal transition-colors" />
+                  <input
+                    type="password"
+                    placeholder="Sua Senha Segura"
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white shadow-inner"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="relative">
-                <Lock size={18} className="absolute left-4 top-4 text-slate-400" />
-                <input
-                  type="password"
-                  placeholder="Sua senha"
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-400 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              {message && message.type !== 'success' && (
-                <div className={`p-4 rounded-xl text-xs font-black uppercase text-center border-2 flex items-center gap-3 ${message.type === 'error' ? 'bg-rose-50 text-rose-800 border-rose-300' : 'bg-blue-50 text-blue-800 border-blue-300'}`}>
-                  {/* Fixed missing AlertCircle name by adding it to imports */}
-                  {message.type === 'error' ? <AlertCircle size={16}/> : <Info size={16}/>}
+              {message && (
+                <div className={`p-4 rounded-2xl text-[10px] font-black uppercase text-center border-2 flex items-center gap-3 animate-shake ${message.type === 'error' ? 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900' : 'bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/20 dark:border-blue-900'}`}>
+                  {message.type === 'error' ? <AlertCircle size={18} className="shrink-0" /> : <Info size={18} className="shrink-0" />}
                   {message.text}
                 </div>
               )}
@@ -133,30 +167,37 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-amber-500 text-slate-900 rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-amber-400 active:scale-95 transition-all flex items-center justify-center gap-2 border-b-4 border-amber-600 text-sm"
+                className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 text-sm
+                  ${isSignUp 
+                    ? 'bg-athena-teal text-white border-athena-teal/80 hover:bg-athena-teal/90' 
+                    : 'bg-amber-500 text-slate-900 border-amber-600 hover:bg-amber-400'}`}
               >
                 {loading ? <Loader2 className="animate-spin" size={20} /> : (
                   <>
-                    {isSignUp ? 'Criar Minha Conta' : 'Entrar no Sistema'}
-                    <ArrowRight size={20} />
+                    {isSignUp ? 'Criar minha conta agora' : 'Entrar no Sistema'}
+                    <Send size={18} />
                   </>
                 )}
               </button>
 
-              <div className="mt-8 text-center border-t border-slate-300 dark:border-slate-800 pt-8">
+              <div className="mt-8 text-center border-t border-slate-200 dark:border-slate-800 pt-8">
                 <button
                   type="button"
                   onClick={() => { setIsSignUp(!isSignUp); setMessage(null); }}
-                  className="text-[10px] font-black uppercase text-slate-600 dark:text-slate-400 hover:text-athena-coral transition-colors tracking-widest"
+                  className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 hover:text-athena-coral transition-all tracking-widest flex items-center justify-center gap-2 mx-auto"
                 >
-                  {isSignUp ? 'Já possui uma conta? Acesse aqui' : 'Não tem conta? Registre-se agora'}
+                  {isSignUp ? (
+                    <><Inbox size={14}/> Já possui conta? Entre por aqui</>
+                  ) : (
+                    <><Plus size={14}/> Novo por aqui? Crie sua conta</>
+                  )}
                 </button>
               </div>
             </form>
           )}
         </div>
         
-        <p className="text-center mt-8 text-[10px] font-black uppercase text-slate-500 tracking-widest opacity-60">
+        <p className="text-center mt-8 text-[10px] font-black uppercase text-slate-500 tracking-widest opacity-40">
           Athena Studies • Domine seu Futuro
         </p>
       </div>

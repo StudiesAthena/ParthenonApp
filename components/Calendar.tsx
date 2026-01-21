@@ -11,14 +11,15 @@ import {
   isPast,
   isToday,
   addWeeks,
-  parseISO,
   isSameDay,
   isAfter,
-  isBefore,
-  startOfDay
+  isBefore
 } from 'date-fns';
 import startOfMonth from 'date-fns/startOfMonth';
 import startOfWeek from 'date-fns/startOfWeek';
+// Fix: Import parseISO and startOfDay directly to resolve export errors in the environment
+import parseISO from 'date-fns/parseISO';
+import startOfDay from 'date-fns/startOfDay';
 import { ptBR } from 'date-fns/locale/pt-BR';
 import { 
   ChevronLeft, ChevronRight, LayoutGrid, List, 

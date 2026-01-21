@@ -5,7 +5,11 @@ import {
   AlertCircle, Trophy, Target, Clock, Calendar, CheckCircle2
 } from 'lucide-react';
 import { CalendarData, SubjectProgress, DayData } from '../types';
-import { subDays, isAfter, startOfDay, parseISO, diffInDays } from 'date-fns';
+import { isAfter } from 'date-fns';
+// Fix: Import date-fns functions directly to resolve export errors and removed unused diffInDays
+import subDays from 'date-fns/subDays';
+import startOfDay from 'date-fns/startOfDay';
+import parseISO from 'date-fns/parseISO';
 
 interface InsightsProps {
   calendarData: CalendarData;

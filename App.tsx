@@ -8,18 +8,19 @@ import { ProgressTracker } from './components/ProgressTracker';
 import { GroupManager } from './components/GroupManager';
 import { Insights } from './components/Insights';
 import { Auth } from './components/Auth';
+import { LandingPage } from './components/LandingPage';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { TermsOfService } from './components/TermsOfService';
+import { FAQPage } from './components/FAQPage';
 import { AppState, DayData, CalendarData, Task } from './types';
 import { 
   BarChart3, LayoutDashboard, Target, Sun, Moon, 
   Palette, Bird, ChevronUp, ChevronDown, Database, 
-  CloudUpload, LogOut, User, AlertCircle, Users, CheckCircle, WifiOff, RefreshCw, Sparkles
+  CloudUpload, LogOut, User, CheckCircle, WifiOff, Sparkles, Users
 } from 'lucide-react';
-import { createClient, Session } from '@supabase/supabase-js';
+import { supabase } from './supabase';
+import { Session } from '@supabase/supabase-js';
 import { format } from 'date-fns';
-
-const SUPABASE_URL = 'https://wajmeqsfcgruhuxasuux.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_CvIBWIOhrKX3kGNKNwzlFg_7fUZzOUk';
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const STORAGE_KEY = 'parthenon_state_v13';
 const THEME_KEY = 'parthenon_theme_v13';
@@ -38,6 +39,8 @@ const DEFAULT_STATE: AppState = {
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [view, setView] = useState<'main' | 'privacy' | 'terms' | 'faq'>('main');
   const [activeTab, setActiveTab] = useState<'calendar' | 'reports' | 'progress' | 'insights' | 'groups'>('calendar');
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem(THEME_KEY) as 'light' | 'dark') || 'light';
@@ -60,23 +63,13 @@ const App: React.FC = () => {
   };
 
   const handleFetchError = (err: any) => {
-    console.error('App Fetch Error Detailed:', JSON.stringify(err, null, 2));
-    
     const isNetworkError = err?.message?.includes('fetch') || !navigator.onLine;
     let msg = isNetworkError 
       ? 'Falha de conexão: Verifique sua internet.' 
       : (err?.message || 'Erro ao sincronizar dados.');
 
-    if (err?.code === '42P01') {
-      msg = 'Tabela "user_states" não encontrada no Supabase.';
-    }
-
     setSyncError(msg);
-    if (isNetworkError) {
-      showNotification(msg, 'info');
-    } else {
-      showNotification(msg, 'error');
-    }
+    showNotification(msg, isNetworkError ? 'info' : 'error');
   };
 
   useEffect(() => {
@@ -90,17 +83,10 @@ const App: React.FC = () => {
       } else {
         setState(DEFAULT_STATE);
         setIsInitialized(false);
-        localStorage.removeItem(STORAGE_KEY);
       }
     };
 
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => handleAuth(session))
-      .catch(err => {
-        handleFetchError(err);
-        setIsInitialized(true);
-      });
-
+    supabase.auth.getSession().then(({ data: { session } }) => handleAuth(session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       handleAuth(session);
     });
@@ -115,9 +101,7 @@ const App: React.FC = () => {
       skipNextPush.current = false;
       return;
     }
-    const timer = setTimeout(() => {
-      pushToCloud();
-    }, 3000);
+    const timer = setTimeout(() => { pushToCloud(); }, 3000);
     return () => clearTimeout(timer);
   }, [state, session, isInitialized]);
 
@@ -129,11 +113,7 @@ const App: React.FC = () => {
   }, [theme]);
 
   const pushToCloud = async () => {
-    if (!session?.user?.email) return;
-    if (!navigator.onLine) {
-        setSyncError('Você está offline. Salvaremos assim que voltar.');
-        return;
-    }
+    if (!session?.user?.email || !navigator.onLine) return;
     setSyncing(true);
     setSyncError(null);
     try {
@@ -144,7 +124,6 @@ const App: React.FC = () => {
           data: state,
           updated_at: new Date().toISOString()
         }, { onConflict: 'email' });
-
       if (error) throw error;
       setLastSync(new Date().toLocaleTimeString());
     } catch (err: any) {
@@ -164,44 +143,11 @@ const App: React.FC = () => {
         .eq('email', userEmail.toLowerCase().trim())
         .single();
 
-      if (error) {
-        if (error.code === 'PGRST116') return; 
-        throw error;
-      }
+      if (error && error.code !== 'PGRST116') throw error;
 
       if (data?.data) {
-        const cloudData = data.data;
-        const cleanCalendar: CalendarData = {};
-        if (cloudData.calendar && typeof cloudData.calendar === 'object') {
-          Object.keys(cloudData.calendar).forEach(dateKey => {
-            const rawDay = cloudData.calendar[dateKey];
-            cleanCalendar[dateKey] = {
-              commitments: typeof rawDay.commitments === 'string' ? rawDay.commitments : '',
-              studyMinutes: typeof rawDay.studyMinutes === 'number' ? rawDay.studyMinutes : 0,
-              tasks: Array.isArray(rawDay.tasks) ? rawDay.tasks.map((t: any) => ({
-                id: String(t.id || Math.random()),
-                text: typeof t.text === 'string' ? t.text : '',
-                completed: !!t.completed,
-                subject: typeof t.subject === 'string' ? t.subject : 'Geral',
-                isRecurring: !!t.isRecurring,
-                recurrenceDay: t.recurrenceDay
-              })) : []
-            };
-          });
-        }
-
-        const hydratedState: AppState = {
-          calendar: cleanCalendar,
-          subjects: Array.isArray(cloudData.subjects) ? cloudData.subjects.map((s: any) => String(s)) : DEFAULT_SUBJECTS,
-          generalNotes: typeof cloudData.generalNotes === 'string' ? cloudData.generalNotes : '',
-          subjectProgress: Array.isArray(cloudData.subjectProgress) ? cloudData.subjectProgress : [],
-          recurringTasks: Array.isArray(cloudData.recurringTasks) ? cloudData.recurringTasks : [],
-          globalDailyGoal: typeof cloudData.globalDailyGoal === 'number' ? cloudData.globalDailyGoal : 120,
-          userEmail: String(userEmail)
-        };
-        
         skipNextPush.current = true;
-        setState(hydratedState);
+        setState(data.data);
         setLastSync(new Date().toLocaleTimeString());
       }
     } catch (err: any) {
@@ -213,10 +159,10 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     setSyncing(true);
-    try {
-        await pushToCloud();
-    } catch (e) {}
+    try { await pushToCloud(); } catch (e) {}
     await supabase.auth.signOut();
+    setShowAuth(false);
+    setView('main');
   };
 
   const updateGlobalGoal = (newGoal: number) => {
@@ -230,18 +176,38 @@ const App: React.FC = () => {
         ...prev,
         calendar: {
           ...prev.calendar,
-          [dateKey]: {
-            ...existingDay,
-            ...data,
-            commitments: typeof data.commitments !== 'undefined' ? String(data.commitments) : existingDay.commitments
-          }
+          [dateKey]: { ...existingDay, ...data }
         }
       };
     });
   };
 
+  if (view === 'privacy') {
+    return <PrivacyPolicy theme={theme} toggleTheme={toggleTheme} onBack={() => setView('main')} />;
+  }
+
+  if (view === 'terms') {
+    return <TermsOfService theme={theme} toggleTheme={toggleTheme} onBack={() => setView('main')} />;
+  }
+
+  if (view === 'faq') {
+    return <FAQPage theme={theme} toggleTheme={toggleTheme} onBack={() => setView('main')} />;
+  }
+
   if (!session) {
-    return <Auth theme={theme} toggleTheme={toggleTheme} />;
+    if (showAuth) {
+      return <Auth theme={theme} toggleTheme={toggleTheme} onBackToLanding={() => setShowAuth(false)} />;
+    }
+    return (
+      <LandingPage 
+        onLoginClick={() => setShowAuth(true)} 
+        theme={theme} 
+        toggleTheme={toggleTheme} 
+        onPrivacyClick={() => setView('privacy')} 
+        onTermsClick={() => setView('terms')}
+        onFAQClick={() => setView('faq')}
+      />
+    );
   }
 
   const todayKey = format(new Date(), 'yyyy-MM-dd');
@@ -264,17 +230,10 @@ const App: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-2 gap-2">
-           <button 
-            onClick={() => pushToCloud()}
-            disabled={syncing}
-            className="py-2.5 bg-white dark:bg-slate-900 border border-slate-500 dark:border-slate-700 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1 hover:bg-slate-100 transition-all text-slate-800 dark:text-slate-300 disabled:opacity-50"
-          >
+           <button onClick={() => pushToCloud()} disabled={syncing} className="py-2.5 bg-white dark:bg-slate-900 border border-slate-500 dark:border-slate-700 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1 hover:bg-slate-100 transition-all text-slate-800 dark:text-slate-300 disabled:opacity-50">
             <CloudUpload size={12} className="text-amber-600" /> {syncing ? '...' : 'Salvar'}
           </button>
-          <button 
-            onClick={handleLogout}
-            className="py-2.5 bg-rose-100 dark:bg-rose-900/20 border border-rose-400 dark:border-rose-900/50 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1 hover:bg-rose-200 transition-all text-rose-700 dark:text-rose-400"
-          >
+          <button onClick={handleLogout} className="py-2.5 bg-rose-100 dark:bg-rose-900/20 border border-rose-400 dark:border-rose-900/50 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1 hover:bg-rose-200 transition-all text-rose-700 dark:text-rose-400">
             <LogOut size={12} /> Sair
           </button>
         </div>
@@ -285,9 +244,6 @@ const App: React.FC = () => {
               <WifiOff size={14} className="shrink-0" />
               <span className="text-[8px] font-black uppercase tracking-tight">{String(syncError)}</span>
             </div>
-            <button onClick={() => pullFromCloud(session.user.email!)} className="text-[7px] font-black uppercase text-rose-800 dark:text-rose-300 underline text-left flex items-center gap-1">
-                <RefreshCw size={8} /> Tentar novamente
-            </button>
           </div>
         )}
 
@@ -314,10 +270,7 @@ const App: React.FC = () => {
 
       <section>
         <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-950 dark:text-slate-400 mb-2">Bloco de Notas</h2>
-        <SideNotes 
-          value={String(state.generalNotes || '')} 
-          onChange={(v) => setState(p => ({ ...p, generalNotes: String(v) }))} 
-        />
+        <SideNotes value={String(state.generalNotes || '')} onChange={(v) => setState(p => ({ ...p, generalNotes: String(v) }))} />
       </section>
 
       <section>
@@ -326,6 +279,21 @@ const App: React.FC = () => {
         </h2>
         <SubjectManager subjects={state.subjects || []} onUpdate={(s) => setState(p => ({ ...p, subjects: s }))} />
       </section>
+      
+      <div className="flex flex-col items-center gap-2 pt-2">
+        <button 
+          onClick={() => setView('privacy')} 
+          className="w-full text-center text-[8px] font-black uppercase text-slate-400 hover:text-athena-teal transition-colors tracking-widest"
+        >
+          Política de Privacidade
+        </button>
+        <button 
+          onClick={() => setView('terms')} 
+          className="w-full text-center text-[8px] font-black uppercase text-slate-400 hover:text-athena-teal transition-colors tracking-widest"
+        >
+          Termos de Serviço
+        </button>
+      </div>
     </div>
   );
 
@@ -366,13 +334,8 @@ const App: React.FC = () => {
           ].map((tab) => {
              const isActive = activeTab === tab.id;
              return (
-              <button 
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center justify-center md:justify-start gap-1.5 md:gap-3 px-1.5 md:px-4 py-2.5 md:py-3.5 rounded-xl md:rounded-2xl text-[9px] md:text-sm font-black uppercase tracking-widest transition-all shadow-md border-2
-                  ${isActive 
-                    ? `text-white border-transparent shadow-lg scale-[1.02] md:scale-105` 
-                    : 'bg-white dark:bg-slate-800 text-slate-950 dark:text-slate-400 border-slate-500 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
+              <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`w-full flex items-center justify-center md:justify-start gap-1.5 md:gap-3 px-1.5 md:px-4 py-2.5 md:py-3.5 rounded-xl md:rounded-2xl text-[9px] md:text-sm font-black uppercase tracking-widest transition-all shadow-md border-2
+                  ${isActive ? `text-white border-transparent shadow-lg scale-[1.02] md:scale-105` : 'bg-white dark:bg-slate-800 text-slate-950 dark:text-slate-400 border-slate-500 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
                 style={isActive ? { backgroundColor: tab.color } : {}}
               >
                 <tab.icon size={14} className="md:size-6" /> <span className="truncate">{tab.label}</span>

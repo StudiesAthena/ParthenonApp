@@ -1,18 +1,14 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../supabase';
 import { 
   Users, Plus, ClipboardList, FileUp, 
   Trash2, Copy, Check, Download, Loader2,
   X, BookOpen, Layers, Save, RefreshCw, AlertTriangle, ChevronDown, Lock, ShieldCheck,
-  Maximize2, Minimize2, Share2, WifiOff, ArrowUpDown, Edit2, MoreVertical, Info, Database, AlertCircle,
+  WifiOff, ArrowUpDown, Edit2, MoreVertical, Info, Database, AlertCircle,
   ShieldAlert
 } from 'lucide-react';
 import { Group, GroupFile, GroupActivity } from '../types';
-
-const SUPABASE_URL = 'https://wajmeqsfcgruhuxasuux.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_CvIBWIOhrKX3kGNKNwzlFg_7fUZzOUk';
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 interface GroupManagerProps {
   userEmail: string;
