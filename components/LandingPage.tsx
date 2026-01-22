@@ -144,7 +144,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     { 
       icon: Smartphone, 
       title: "Mobilidade Sem Limites", 
-      desc: "Acesse sua jornada no computador, celular ou tablet. Estude de onde quiser com sincronização total e fluidez entre todos os seus dispositivos.",
+      desc: "Acesse sua jornada em qualquer dispositivo com sincronização total e integração direta com o Google Calendar para compromissos e sessões de estudo.",
       iconColor: "text-purple-700 dark:text-purple-400", 
       iconBg: "bg-purple-100 dark:bg-purple-900/40", 
       hoverBg: "group-hover:bg-purple-600" 

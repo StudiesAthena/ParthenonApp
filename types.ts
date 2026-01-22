@@ -8,11 +8,21 @@ export interface Task {
   recurrenceDay?: number;
 }
 
+export interface Commitment {
+  id: string;
+  text: string;
+  time: string;
+  isSyncedWithGoogle?: boolean;
+  isRecurring?: boolean;
+  recurrenceDay?: number;
+}
+
 export interface DayData {
-  commitments: string;
+  commitments: Commitment[];
   tasks: Task[];
   studyMinutes: number;
   meta_tempo_minutos?: number;
+  isSyncedWithGoogle?: boolean;
 }
 
 export type CalendarData = Record<string, DayData>;
@@ -64,6 +74,7 @@ export interface AppState {
   generalNotes: string;
   subjectProgress: SubjectProgress[];
   recurringTasks: Task[];
+  recurringCommitments: Commitment[];
   globalDailyGoal: number;
   userEmail: string;
 }

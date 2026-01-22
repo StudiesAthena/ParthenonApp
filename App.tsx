@@ -12,18 +12,19 @@ import { LandingPage } from './components/LandingPage';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { TermsOfService } from './components/TermsOfService';
 import { FAQPage } from './components/FAQPage';
-import { AppState, DayData, CalendarData, Task } from './types';
+import { AppState, DayData, CalendarData, Task, Commitment } from './types';
 import { 
   BarChart3, LayoutDashboard, Target, Sun, Moon, 
   Palette, Bird, ChevronUp, ChevronDown, Database, 
-  CloudUpload, LogOut, User, CheckCircle, WifiOff, Sparkles, Users
+  CloudUpload, LogOut, User, CheckCircle, WifiOff, Sparkles, Users,
+  Share2, Calendar as CalendarIcon
 } from 'lucide-react';
 import { supabase } from './supabase';
 import { Session } from '@supabase/supabase-js';
 import { format } from 'date-fns';
 
-const STORAGE_KEY = 'parthenon_state_v13';
-const THEME_KEY = 'parthenon_theme_v13';
+const STORAGE_KEY = 'parthenon_state_v15';
+const THEME_KEY = 'parthenon_theme_v15';
 
 const DEFAULT_SUBJECTS = ['Português', 'Matemática', 'História', 'Geografia', 'Biologia', 'Física', 'Química', 'Inglês'];
 
@@ -33,6 +34,7 @@ const DEFAULT_STATE: AppState = {
   generalNotes: '',
   subjectProgress: [],
   recurringTasks: [],
+  recurringCommitments: [],
   globalDailyGoal: 120,
   userEmail: ''
 };
@@ -70,6 +72,41 @@ const App: React.FC = () => {
 
     setSyncError(msg);
     showNotification(msg, isNetworkError ? 'info' : 'error');
+  };
+
+  const migrateData = (data: any): AppState => {
+    if (!data || !data.calendar) return data;
+    
+    const newCalendar: CalendarData = {};
+    Object.keys(data.calendar).forEach(key => {
+      const day = data.calendar[key];
+      let migratedCommitments: Commitment[] = [];
+      if (typeof day.commitments === 'string') {
+        if (day.commitments.trim() !== '') {
+          migratedCommitments = [{
+            id: 'legacy-' + Math.random().toString(36).substr(2, 5),
+            text: day.commitments,
+            time: '12:00',
+            isSyncedWithGoogle: !!day.isSyncedWithGoogle
+          }];
+        }
+      } else if (Array.isArray(day.commitments)) {
+        migratedCommitments = day.commitments;
+      }
+
+      newCalendar[key] = {
+        ...day,
+        commitments: migratedCommitments
+      };
+    });
+
+    return {
+      ...data,
+      calendar: newCalendar,
+      recurringTasks: Array.isArray(data.recurringTasks) ? data.recurringTasks : [],
+      recurringCommitments: Array.isArray(data.recurringCommitments) ? data.recurringCommitments : [],
+      subjectProgress: Array.isArray(data.subjectProgress) ? data.subjectProgress : []
+    };
   };
 
   useEffect(() => {
@@ -147,7 +184,8 @@ const App: React.FC = () => {
 
       if (data?.data) {
         skipNextPush.current = true;
-        setState(data.data);
+        const migratedState = migrateData(data.data);
+        setState(migratedState);
         setLastSync(new Date().toLocaleTimeString());
       }
     } catch (err: any) {
@@ -169,15 +207,27 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, globalDailyGoal: Math.max(0, newGoal) }));
   };
 
-  const updateCalendarDay = (dateKey: string, data: Partial<DayData>) => {
+  const updateCalendarDay = (dateKey: string, dayData: Partial<DayData>, recurringTasks?: Task[], recurringCommitments?: Commitment[]) => {
     setState(prev => {
-      const existingDay = prev.calendar[dateKey] || { commitments: '', tasks: [], studyMinutes: 0 };
+      const existingDay: DayData = prev.calendar[dateKey] || { commitments: [], tasks: [], studyMinutes: 0 };
+      
+      const currentCommitments = Array.isArray(existingDay.commitments) ? existingDay.commitments : [];
+      const updatedCommitments = dayData.commitments !== undefined 
+        ? (Array.isArray(dayData.commitments) ? dayData.commitments : currentCommitments)
+        : currentCommitments;
+
       return {
         ...prev,
         calendar: {
           ...prev.calendar,
-          [dateKey]: { ...existingDay, ...data }
-        }
+          [dateKey]: { 
+            ...existingDay, 
+            ...dayData, 
+            commitments: updatedCommitments 
+          } as DayData
+        },
+        recurringTasks: recurringTasks !== undefined ? recurringTasks : prev.recurringTasks,
+        recurringCommitments: recurringCommitments !== undefined ? recurringCommitments : prev.recurringCommitments
       };
     });
   };
@@ -218,6 +268,7 @@ const App: React.FC = () => {
 
   const SidebarWidgets = () => (
     <div className="space-y-6 md:space-y-8 p-3 md:p-0 bg-white dark:bg-slate-900 md:bg-transparent">
+      {/* Perfil & Sync */}
       <section className="bg-slate-100 dark:bg-slate-800/40 p-4 rounded-2xl border-2 border-slate-500 dark:border-slate-700 shadow-sm space-y-3">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-8 h-8 rounded-lg bg-amber-500 text-slate-900 flex items-center justify-center">
@@ -253,6 +304,25 @@ const App: React.FC = () => {
             {syncing ? 'Sincronizando...' : (lastSync ? `Salvo às ${lastSync}` : 'Sincronizado')}
           </span>
         </div>
+      </section>
+
+      {/* Google Calendar Integration Widget */}
+      <section className="bg-white dark:bg-slate-800 p-4 rounded-2xl border-2 border-athena-teal shadow-sm group hover:border-athena-coral transition-colors">
+        <h2 className="text-[10px] font-black uppercase tracking-widest text-athena-teal dark:text-athena-teal mb-3 flex items-center gap-2">
+           <Share2 size={14} /> Conexões Externas
+        </h2>
+        <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center border border-slate-200">
+             <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[9px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Google Calendar</p>
+            <p className="text-[8px] font-bold text-emerald-600 uppercase">Sincronia Ativa</p>
+          </div>
+        </div>
+        <p className="text-[8px] font-bold text-slate-500 mt-3 leading-tight px-1">
+          Seus compromissos podem ser exportados com um clique para sua agenda pessoal.
+        </p>
       </section>
 
       <section className="bg-white dark:bg-slate-800 p-4 rounded-2xl border-2 border-amber-600 shadow-sm">
@@ -388,6 +458,8 @@ const App: React.FC = () => {
                   subjects={state.subjects || []}
                   globalGoal={state.globalDailyGoal || 0}
                   onUpdateDay={updateCalendarDay}
+                  recurringTasks={state.recurringTasks || []}
+                  recurringCommitments={state.recurringCommitments || []}
                 />
               )}
               {activeTab === 'reports' && <Reports calendar={state.calendar || {}} subjects={state.subjects || []} />}
