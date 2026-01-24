@@ -157,7 +157,7 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
                     <Mail size={18} className="absolute left-4 top-4 text-slate-400 group-focus-within:text-athena-teal transition-colors" />
                     <input
                       type="email"
-                      placeholder="E-mail Acadêmico"
+                      placeholder="E-mail"
                       className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white shadow-inner"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -169,7 +169,7 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
                     <Lock size={18} className="absolute left-4 top-4 text-slate-400 group-focus-within:text-athena-teal transition-colors" />
                     <input
                       type="password"
-                      placeholder="Sua Senha Segura"
+                      placeholder="Senha"
                       className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white shadow-inner"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
