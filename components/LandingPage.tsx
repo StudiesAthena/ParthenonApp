@@ -5,7 +5,7 @@ import {
   BarChart3, CheckCircle2, ArrowRight, BookOpen, 
   ShieldCheck, Smartphone, Zap, Database, Clock,
   ChevronDown, HelpCircle, Star, CreditCard,
-  Award, Crown, Sun, Moon, X, CalendarCheck, Tag
+  Award, Crown, Sun, Moon, X, CalendarCheck, Tag, Lock
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -330,10 +330,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <p className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-tight">{plan.desc}</p>
                 </div>
 
-                <div className="mb-8">
-                  <div className="flex items-baseline gap-1">
+                <div className="mb-8 relative group/price">
+                  <div className={`flex items-baseline gap-1 transition-all duration-300 ${plan.status === 'soon' ? 'blur-md select-none' : ''}`}>
                     <span className="text-4xl md:text-5xl font-black text-slate-950 dark:text-white tracking-tighter">{plan.price}</span>
                   </div>
+                  
+                  {plan.status === 'soon' && (
+                    <div className="absolute inset-0 flex items-center justify-center z-20">
+                      <div className="bg-slate-950 dark:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border border-slate-700 shadow-2xl -rotate-2 flex items-center gap-2 whitespace-nowrap">
+                        <Lock size={12} className="text-amber-500" /> EM BREVE
+                      </div>
+                    </div>
+                  )}
+                  
                   <p className="text-[10px] font-black text-athena-coral uppercase tracking-widest mt-2">{plan.period}</p>
                 </div>
 
@@ -355,7 +364,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   disabled={plan.status === 'soon'}
                   className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg transition-all flex items-center justify-center gap-2
                     ${plan.status === 'active' 
-                      ? 'bg-athena-coral text-white hover:bg-rose-600 active:scale-95 border-b-4 border-slate-900/20' 
+                      ? 'bg-athena-teal text-white hover:bg-rose-600 active:scale-95 border-b-4 border-slate-900/20' 
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed border-2 border-slate-300 dark:border-slate-700'}`}
                 >
                   {plan.cta}
