@@ -176,13 +176,13 @@ export const TermsOfService: React.FC<TermsOfServiceProps> = ({ onBack, theme, t
 
             <section className="space-y-4">
               <h2 className="text-xl font-black text-athena-teal dark:text-athena-coral uppercase tracking-tight">13. Contato</h2>
-              <div className="p-6 bg-athena-coral/5 dark:bg-athena-coral/10 rounded-2xl border-2 border-athena-coral/20 flex items-center gap-6">
-                <div className="w-12 h-12 bg-athena-coral rounded-xl flex items-center justify-center text-white shadow-lg">
+              <div className="p-6 md:p-8 bg-athena-coral/5 dark:bg-athena-coral/10 rounded-3xl border-2 border-athena-coral/20 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
+                <div className="w-12 h-12 bg-athena-coral rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
                   <Mail size={24} />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Suporte Jurídico</p>
-                  <p className="text-lg font-black text-athena-coral">studiesathena2025@gmail.com</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">Suporte Jurídico</p>
+                  <p className="text-base md:text-lg font-black text-athena-coral break-all">studiesathena2025@gmail.com</p>
                 </div>
               </div>
             </section>

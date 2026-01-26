@@ -198,13 +198,13 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack, theme, tog
 
             <section className="space-y-4">
               <h2 className="text-xl font-black text-athena-teal dark:text-athena-coral uppercase tracking-tight">11. Contato</h2>
-              <div className="p-6 bg-athena-teal/5 dark:bg-athena-teal/10 rounded-2xl border-2 border-athena-teal/20 flex items-center gap-6">
-                <div className="w-12 h-12 bg-athena-teal rounded-xl flex items-center justify-center text-white shadow-lg">
+              <div className="p-6 md:p-8 bg-athena-teal/5 dark:bg-athena-teal/10 rounded-3xl border-2 border-athena-teal/20 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
+                <div className="w-12 h-12 bg-athena-teal rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
                   <Mail size={24} />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Canal de Atendimento</p>
-                  <p className="text-lg font-black text-athena-teal">studiesathena2025@gmail.com</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">Canal de Atendimento</p>
+                  <p className="text-base md:text-lg font-black text-athena-teal break-all">studiesathena2025@gmail.com</p>
                 </div>
               </div>
             </section>
