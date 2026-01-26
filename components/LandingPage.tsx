@@ -5,7 +5,7 @@ import {
   BarChart3, CheckCircle2, ArrowRight, BookOpen, 
   ShieldCheck, Smartphone, Zap, Database, Clock,
   ChevronDown, HelpCircle, Star, CreditCard,
-  Award, Crown, Sun, Moon, X, CalendarCheck, Tag, Lock
+  Award, Crown, Sun, Moon, X, CalendarCheck, Tag, Lock, GraduationCap
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -304,12 +304,55 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
+      {/* Section: Athena Studies Institutional */}
+      <section className="py-32 px-6 bg-white dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16 md:gap-24">
+          <div className="w-full md:w-1/2 flex justify-center md:justify-end animate-fade-in">
+            <div className="relative group">
+              <div className="absolute -inset-6 bg-athena-teal/10 rounded-[4rem] blur-3xl group-hover:bg-athena-teal/20 transition-all duration-500"></div>
+              <div className="relative p-0 bg-transparent rounded-[3rem] shadow-[0_32px_64px_-15px_rgba(0,0,0,0.2)] overflow-hidden flex items-center justify-center aspect-square max-w-[320px]">
+                 <img 
+                    src="https://i.imgur.com/SD28FYh.png" 
+                    alt="Athena Studies Logo" 
+                    className="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
+                 />
+              </div>
+            </div>
+          </div>
+          <div className="w-full md:w-1/2 space-y-8 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-athena-teal/10 text-athena-teal rounded-full border border-athena-teal/20">
+              <Award size={14} />
+              <span className="text-[10px] font-black uppercase tracking-widest">O Selo de Excelência</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-950 dark:text-white tracking-tighter leading-none">
+              Um produto criado por <span className="text-athena-teal">Athena Studies.</span>
+            </h2>
+            <p className="text-lg font-bold text-slate-700 dark:text-slate-400 leading-relaxed">
+              Transformamos a sua jornada de aprendizado por meio de soluções de alta performance. A Athena Studies nasceu para guiar estudantes que buscam autonomia, organização e resultados extraordinários. O Parthenon Planner é a materialização da nossa metodologia pedagógica em formato digital. Venha conhecer mais de nossas soluções e serviços.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-6 justify-center md:justify-start">
+               <a 
+                 href="https://athenastudies.vercel.app/" 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="flex items-center gap-2 text-athena-teal hover:text-athena-coral font-black uppercase text-[10px] tracking-widest transition-all group border-2 border-athena-teal/20 px-5 py-2.5 rounded-xl hover:border-athena-coral/20 hover:bg-slate-50 dark:hover:bg-slate-900"
+               >
+                 Conhecer Metodologia Athena <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+               </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section id="pricing" className="py-32 px-6 bg-slate-100 dark:bg-slate-900/40 scroll-mt-24">
         <div className="max-w-[1440px] mx-auto">
           <div className="text-center space-y-4 mb-20">
             <h3 className="text-[11px] font-black text-athena-coral uppercase tracking-[0.4em]">Planos de Carreira</h3>
             <h2 className="text-4xl md:text-5xl font-black text-slate-950 dark:text-white tracking-tighter">Escolha seu nível de domínio.</h2>
+            <p className="text-sm md:text-base font-bold text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              O Parthenon é integrado aos serviços da <span className="text-athena-teal dark:text-athena-teal font-black">Athena Studies</span>. Seus planos dão acesso a vantagens reais em consultorias, Study Planners, aulas particulares e soluções para seus estudos, conectando organização, estratégia e acompanhamento.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
