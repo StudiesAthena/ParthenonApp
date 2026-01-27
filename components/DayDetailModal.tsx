@@ -223,10 +223,15 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
             
             <div className="space-y-3 p-4 bg-amber-50/50 dark:bg-amber-900/10 rounded-2xl border-2 border-amber-200 dark:border-amber-900 shadow-sm">
                <div className="flex flex-col gap-3">
-                  <div className="flex gap-3">
-                    <input type="time" className="p-3 w-32 rounded-xl border-2 border-amber-300 dark:border-amber-900 bg-white dark:bg-slate-900 text-xs font-black outline-none focus:border-amber-500" value={newCommitmentTime} onChange={(e) => setNewCommitmentTime(e.target.value)} />
-                    <input type="text" className="flex-1 p-3 rounded-xl border-2 border-amber-300 dark:border-amber-900 bg-white dark:bg-slate-900 outline-none text-[11px] font-bold" placeholder="Descrição do compromisso..." value={newCommitmentText} onChange={(e) => setNewCommitmentText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addCommitment()} />
-                    <button onClick={addCommitment} className="p-3 bg-athena-coral text-white rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"><Plus size={20} /></button>
+                  <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
+                    <div className="flex gap-2">
+                      <input type="time" className="flex-1 sm:w-28 p-3 rounded-xl border-2 border-amber-300 dark:border-amber-900 bg-white dark:bg-slate-900 text-xs font-black outline-none focus:border-amber-500" value={newCommitmentTime} onChange={(e) => setNewCommitmentTime(e.target.value)} />
+                      <button onClick={addCommitment} className="sm:hidden p-3 bg-athena-coral text-white rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"><Plus size={20} /></button>
+                    </div>
+                    <div className="flex flex-1 gap-2">
+                      <input type="text" className="flex-1 p-3 rounded-xl border-2 border-amber-300 dark:border-amber-900 bg-white dark:bg-slate-900 outline-none text-[11px] font-bold" placeholder="Descrição do compromisso..." value={newCommitmentText} onChange={(e) => setNewCommitmentText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addCommitment()} />
+                      <button onClick={addCommitment} className="hidden sm:flex p-3 bg-athena-coral text-white rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"><Plus size={20} /></button>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-amber-200 dark:border-amber-800">
                     <button onClick={() => setCommIsRecurring(!commIsRecurring)} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[9px] font-black uppercase transition-all border-2 ${commIsRecurring ? 'bg-amber-600 text-white border-amber-600 shadow-md' : 'bg-white dark:bg-slate-900 text-slate-500 border-amber-200'}`}><CalendarCheck size={12} /> Repetir Semanal</button>

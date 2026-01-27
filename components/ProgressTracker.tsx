@@ -69,12 +69,12 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
       </div>
 
       {showForm && (
-        <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2.5rem] border-2 border-slate-500 dark:border-slate-800 shadow-2xl space-y-6 animate-fade-in max-w-3xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-slate-900 p-5 md:p-8 rounded-[2.5rem] border-2 border-slate-500 dark:border-slate-800 shadow-2xl space-y-6 animate-fade-in max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             <div>
-              <label className="text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-2 block">Selecione a Matéria</label>
+              <label className="text-[9px] md:text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-2 block">Selecione a Matéria</label>
               <select 
-                className="w-full p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-800 dark:border-slate-700 outline-none focus:ring-2 focus:ring-amber-500 text-slate-950 dark:text-white font-bold"
+                className="w-full p-3 md:p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-800 dark:border-slate-700 outline-none focus:ring-2 focus:ring-amber-500 text-slate-950 dark:text-white font-bold text-sm"
                 value={formData.subjectName}
                 onChange={e => setFormData({...formData, subjectName: e.target.value})}
               >
@@ -82,9 +82,9 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
               </select>
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-2 block">Estado Atual</label>
+              <label className="text-[9px] md:text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-2 block">Estado Atual</label>
               <select 
-                className="w-full p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-800 dark:border-slate-700 outline-none focus:ring-2 focus:ring-amber-500 text-slate-950 dark:text-white font-bold"
+                className="w-full p-3 md:p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-800 dark:border-slate-700 outline-none focus:ring-2 focus:ring-amber-500 text-slate-950 dark:text-white font-bold text-sm"
                 value={formData.status}
                 onChange={e => setFormData({...formData, status: e.target.value as any})}
               >
@@ -94,38 +94,38 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
              <div>
-               <label className="text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-2 block">Data de Início (Obrigatória)</label>
-               <input type="date" className="w-full p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-800 dark:border-slate-700 font-bold text-slate-950 dark:text-white" value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} />
+               <label className="text-[9px] md:text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-2 block">Data de Início (Obrigatória)</label>
+               <input type="date" className="w-full p-3 md:p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-800 dark:border-slate-700 font-bold text-slate-950 dark:text-white text-sm" value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} />
              </div>
              <div>
-               <label className="text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-2 block">Data de Conclusão</label>
-               <input type="date" className="w-full p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-800 dark:border-slate-700 font-bold text-slate-950 dark:text-white" value={formData.endDate || ''} onChange={e => setFormData({...formData, endDate: e.target.value})} />
+               <label className="text-[9px] md:text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-2 block">Data de Conclusão</label>
+               <input type="date" className="w-full p-3 md:p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-800 dark:border-slate-700 font-bold text-slate-950 dark:text-white text-sm" value={formData.endDate || ''} onChange={e => setFormData({...formData, endDate: e.target.value})} />
              </div>
           </div>
           
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border-2 border-slate-400 dark:border-slate-700">
-            <label className="text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-3 block">Adicionar Tópicos/Assuntos</label>
-            <div className="flex gap-3 mb-4">
+          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl border-2 border-slate-400 dark:border-slate-700">
+            <label className="text-[9px] md:text-[10px] font-black text-slate-700 dark:text-slate-400 uppercase tracking-widest mb-3 block">Adicionar Tópicos/Assuntos</label>
+            <div className="flex gap-2 md:gap-3 mb-4">
               <input 
                 type="text" 
-                className="flex-1 p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-900 dark:border-slate-800 font-bold outline-none focus:border-amber-500"
+                className="flex-1 p-3 md:p-4 rounded-xl border-2 border-slate-400 dark:bg-slate-900 dark:border-slate-800 font-bold outline-none focus:border-amber-500 text-sm"
                 placeholder="Ex: Funções Afins, Revolução Russa..." 
                 value={newTopic} 
                 onChange={e => setNewTopic(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleAddTopic()}
               />
-              <button onClick={handleAddTopic} className="p-4 bg-indigo-600 text-white rounded-xl shadow-md active:scale-95"><Plus size={24}/></button>
+              <button onClick={handleAddTopic} className="p-3 md:p-4 bg-indigo-600 text-white rounded-xl shadow-md active:scale-95"><Plus size={24}/></button>
             </div>
             <div className="flex flex-wrap gap-2">
               {formData.topics?.map((t, i) => (
-                <span key={i} className="px-3.5 py-1.5 bg-white dark:bg-slate-700 rounded-lg text-[10px] font-black text-slate-950 dark:text-white border-2 border-slate-300 dark:border-slate-600 shadow-sm uppercase tracking-tight">{t}</span>
+                <span key={i} className="px-3 py-1.5 bg-white dark:bg-slate-700 rounded-lg text-[10px] font-black text-slate-950 dark:text-white border-2 border-slate-300 dark:border-slate-600 shadow-sm uppercase tracking-tight">{t}</span>
               ))}
             </div>
           </div>
 
-          <button onClick={handleAdd} className="w-full py-5 bg-amber-500 text-slate-900 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-amber-400 transition-all border-b-4 border-amber-600">Confirmar Registro</button>
+          <button onClick={handleAdd} className="w-full py-4 md:py-5 bg-amber-500 text-slate-900 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-amber-400 transition-all border-b-4 border-amber-600 text-xs md:text-sm">Confirmar Registro</button>
         </div>
       )}
 
