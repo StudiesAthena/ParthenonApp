@@ -307,11 +307,11 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
                           {!isExpanded && <button onClick={() => toggleExpand(task.id)} className="sm:hidden text-slate-300"><ChevronRight size={16} /></button>}
                         </div>
                         {isExpanded && (
-                          <div className="mt-4 flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-1 duration-200">
-                            <button onClick={() => startEditTask(task)} className="sm:hidden flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-[10px] font-black uppercase"><Edit2 size={14}/> Editar</button>
-                            <button onClick={() => syncTaskToGoogle(task)} className="flex items-center gap-2 px-4 py-2 bg-athena-teal/10 text-athena-teal rounded-lg text-[10px] font-black uppercase"><CalendarIcon size={14}/> G-Calendar</button>
-                            <button onClick={() => setItemToDelete({ id: task.id, type: 'task', isRecurring: !!task.isRecurring })} className="flex items-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-lg text-[10px] font-black uppercase"><Trash2 size={14}/> Excluir</button>
-                            <button onClick={() => toggleExpand(task.id)} className="ml-auto p-2 text-slate-400"><X size={14}/></button>
+                          <div className="mt-4 grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-1 duration-200">
+                            <button onClick={() => startEditTask(task)} className="sm:hidden flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[9px] font-black uppercase border border-slate-200 dark:border-slate-700 shadow-sm"><Edit2 size={14}/> Editar</button>
+                            <button onClick={() => syncTaskToGoogle(task)} className="flex items-center justify-center gap-2 px-4 py-3 bg-athena-teal/10 text-athena-teal rounded-xl text-[9px] font-black uppercase border border-athena-teal/20 shadow-sm"><CalendarIcon size={14}/> G-Calendar</button>
+                            <button onClick={() => setItemToDelete({ id: task.id, type: 'task', isRecurring: !!task.isRecurring })} className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-xl text-[9px] font-black uppercase border border-rose-200 dark:border-rose-900/20 shadow-sm"><Trash2 size={14}/> Excluir</button>
+                            <button onClick={() => toggleExpand(task.id)} className="col-span-2 sm:col-auto sm:ml-auto py-3 text-slate-400 flex items-center justify-center gap-1 text-[9px] font-black uppercase border border-dashed border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 transition-all"><ChevronUp size={14}/> Recolher Detalhes</button>
                           </div>
                         )}
                       </>
@@ -399,11 +399,11 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
                           {!isExpanded && <button onClick={() => toggleExpand(comm.id)} className="sm:hidden text-slate-300"><ChevronRight size={16} /></button>}
                         </div>
                         {isExpanded && (
-                          <div className="mt-4 flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-1 duration-200">
-                             <button onClick={() => startEditComm(comm)} className="sm:hidden flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-[10px] font-black uppercase"><Edit2 size={14}/> Editar</button>
-                             <button onClick={() => syncCommitmentToGoogle(comm)} className="flex items-center gap-2 px-4 py-2 bg-athena-teal/10 text-athena-teal rounded-lg text-[10px] font-black uppercase"><Share2 size={14}/> G-Calendar</button>
-                             <button onClick={() => setItemToDelete({ id: comm.id, type: 'commitment', isRecurring: !!comm.isRecurring })} className="flex items-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-lg text-[10px] font-black uppercase"><Trash2 size={14}/> Excluir</button>
-                             <button onClick={() => toggleExpand(comm.id)} className="ml-auto p-2 text-slate-400"><X size={14}/></button>
+                          <div className="mt-4 grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-end gap-2 pt-4 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-1 duration-200">
+                             <button onClick={() => startEditComm(comm)} className="sm:hidden flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[9px] font-black uppercase border border-slate-200 dark:border-slate-700 shadow-sm"><Edit2 size={14}/> Editar</button>
+                             <button onClick={() => syncCommitmentToGoogle(comm)} className="flex items-center justify-center gap-2 px-4 py-3 bg-athena-teal/10 text-athena-teal rounded-xl text-[9px] font-black uppercase border border-athena-teal/20 shadow-sm"><Share2 size={14}/> G-Calendar</button>
+                             <button onClick={() => setItemToDelete({ id: comm.id, type: 'commitment', isRecurring: !!comm.isRecurring })} className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-xl text-[9px] font-black uppercase border border-rose-200 dark:border-rose-900/20 shadow-sm"><Trash2 size={14}/> Excluir</button>
+                             <button onClick={() => toggleExpand(comm.id)} className="col-span-2 sm:col-auto sm:ml-auto py-3 text-slate-400 flex items-center justify-center gap-1 text-[9px] font-black uppercase border border-dashed border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 transition-all"><ChevronUp size={14}/> Recolher Detalhes</button>
                           </div>
                         )}
                       </>
