@@ -13,7 +13,7 @@ const PRESET_COLORS = [
   '#6366F1', '#8B5CF6', '#D946EF', '#F43F5E', '#F97316',
   '#84CC16', '#06B6D4', '#14B8A6', '#EC4899', '#71717A',
   '#78350F', '#1E3A8A', '#365314', '#581C87', '#451A03',
-  '#FF0000', '#7F0000', '#FFABAB', '#00B404', '#FEF57A'
+  '#FF0000', '#7F0000', '#FFABAB', '#00B404', '#F6D900'
 ];
 
 export const SubjectManager: React.FC<SubjectManagerProps> = ({ subjects, onUpdate }) => {
