@@ -279,25 +279,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               Receba listas de exercícios, slides de aula e recados importantes em um ambiente focado. O Parthenon cria uma ponte direta entre orientadores e estudantes.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-6">
-             <div className="space-y-6 mt-12">
-                <div className="p-10 bg-slate-900 border-2 border-slate-800 rounded-3xl space-y-4 shadow-xl">
-                  <BookOpen className="text-athena-coral" size={32} />
-                  <p className="text-xs font-black uppercase tracking-widest text-slate-300">Conteúdos</p>
+          <div className="grid grid-cols-2 gap-4 md:gap-6">
+             <div className="space-y-4 md:space-y-6 mt-12">
+                <div className="p-5 md:p-10 bg-slate-900 border-2 border-slate-800 rounded-3xl space-y-2 md:space-y-4 shadow-xl">
+                  <BookOpen className="text-athena-coral" size={24} md:size={32} />
+                  <p className="text-[10px] md:text-xs font-black uppercase tracking-wider md:tracking-widest text-slate-300">Conteúdos</p>
                 </div>
-                <div className="p-10 bg-athena-teal border-2 border-athena-teal/50 rounded-3xl space-y-4 shadow-2xl">
-                  <Database className="text-white" size={32} />
-                  <p className="text-xs font-black uppercase tracking-widest text-white/90">Arquivos</p>
+                <div className="p-5 md:p-10 bg-athena-teal border-2 border-athena-teal/50 rounded-3xl space-y-2 md:space-y-4 shadow-2xl">
+                  <Database className="text-white" size={24} md:size={32} />
+                  <p className="text-[10px] md:text-xs font-black uppercase tracking-wider md:tracking-widest text-white/90">Arquivos</p>
                 </div>
              </div>
-             <div className="space-y-6">
-                <div className="p-10 bg-amber-500 text-slate-950 rounded-3xl space-y-4 shadow-2xl border-2 border-amber-600">
-                  <Zap size={32} />
-                  <p className="text-xs font-black uppercase tracking-widest text-slate-950/70">Agilidade</p>
+             <div className="space-y-4 md:space-y-6">
+                <div className="p-5 md:p-10 bg-amber-500 text-slate-950 rounded-3xl space-y-2 md:space-y-4 shadow-2xl border-2 border-amber-600">
+                  <Zap size={24} md:size={32} />
+                  <p className="text-[10px] md:text-xs font-black uppercase tracking-wider md:tracking-widest text-slate-950/70">Agilidade</p>
                 </div>
-                <div className="p-10 bg-slate-900 border-2 border-slate-800 rounded-3xl space-y-4 shadow-xl">
-                  <Clock className="text-emerald-500" size={32} />
-                  <p className="text-xs font-black uppercase tracking-widest text-slate-300">Constância</p>
+                <div className="p-5 md:p-10 bg-slate-900 border-2 border-slate-800 rounded-3xl space-y-2 md:space-y-4 shadow-xl">
+                  <Clock className="text-emerald-500" size={24} md:size={32} />
+                  <p className="text-[10px] md:text-xs font-black uppercase tracking-wider md:tracking-widest text-slate-300">Constância</p>
                 </div>
              </div>
           </div>
