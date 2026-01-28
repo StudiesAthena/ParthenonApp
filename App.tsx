@@ -123,7 +123,29 @@ const App: React.FC = () => {
       }
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => handleAuth(session));
+    // Função para inicializar sessão tratando erros de refresh token
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          // Se o token for inválido, limpa o estado para evitar loops
+          if (error.message.includes("refresh_token_not_found") || error.message.includes("refresh token")) {
+            await supabase.auth.signOut();
+            handleAuth(null);
+          } else {
+            handleAuth(session);
+          }
+        } else {
+          handleAuth(session);
+        }
+      } catch (err) {
+        console.error("Auth init error:", err);
+        handleAuth(null);
+      }
+    };
+
+    initSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       handleAuth(session);
     });
