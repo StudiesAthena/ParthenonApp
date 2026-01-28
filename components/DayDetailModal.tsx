@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { format, addHours } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { X, Trash2, CheckCircle2, Circle, Clock, ChevronUp, ChevronDown, RefreshCw, AlertCircle, RotateCcw, BookOpen, CalendarCheck, Share2, Plus, Calendar as CalendarIcon, Edit2, Check } from 'lucide-react';
+import { X, Trash2, CheckCircle2, Circle, Clock, ChevronUp, ChevronDown, RefreshCw, AlertCircle, RotateCcw, BookOpen, CalendarCheck, Share2, Plus, Calendar as CalendarIcon, Edit2, Check, ChevronRight } from 'lucide-react';
 import { DayData, Task, Commitment } from '../types';
 
 interface DayDetailModalProps {
@@ -47,6 +47,18 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
   const [editCommTime, setEditCommTime] = useState('');
 
   const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'task' | 'commitment', isRecurring?: boolean } | null>(null);
+
+  // State para expansão mobile
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (id: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const dailyWeekday = date.getDay();
   
@@ -251,48 +263,62 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
               </div>
             </div>
 
-            <div className="space-y-2">
-              {activeDayTasks.map((task) => (
-                <div key={task.id} className="flex items-center gap-3 p-4 rounded-xl shadow-sm border-2 bg-white dark:bg-slate-800/50 border-slate-300 dark:border-slate-800 transition-all hover:border-athena-teal/50">
-                  {editingTaskId === task.id ? (
-                    <div className="flex-1 space-y-3 animate-in fade-in duration-200">
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <select 
-                          className="p-2 rounded-lg border-2 border-athena-teal dark:bg-slate-900 text-[9px] font-black uppercase outline-none"
-                          value={editTaskSubject}
-                          onChange={(e) => setEditTaskSubject(e.target.value)}
-                        >
-                          {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                        <input 
-                          type="text" 
-                          className="flex-1 p-2 rounded-lg border-2 border-athena-teal dark:bg-slate-900 text-[11px] font-bold outline-none"
-                          value={editTaskText}
-                          onChange={(e) => setEditTaskText(e.target.value)}
-                          autoFocus
-                        />
+            <div className="space-y-3">
+              {activeDayTasks.map((task) => {
+                const isExpanded = expandedItems.has(task.id);
+                return (
+                  <div key={task.id} className="flex flex-col p-4 rounded-xl shadow-sm border-2 bg-white dark:bg-slate-800/50 border-slate-300 dark:border-slate-800 transition-all hover:border-athena-teal/50">
+                    {editingTaskId === task.id ? (
+                      <div className="flex-1 space-y-3 animate-in fade-in duration-200">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <select 
+                            className="p-2 rounded-lg border-2 border-athena-teal dark:bg-slate-900 text-[9px] font-black uppercase outline-none"
+                            value={editTaskSubject}
+                            onChange={(e) => setEditTaskSubject(e.target.value)}
+                          >
+                            {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                          <input 
+                            type="text" 
+                            className="flex-1 p-2 rounded-lg border-2 border-athena-teal dark:bg-slate-900 text-[11px] font-bold outline-none"
+                            value={editTaskText}
+                            onChange={(e) => setEditTaskText(e.target.value)}
+                            autoFocus
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => setEditingTaskId(null)} className="p-2 text-slate-500 hover:text-slate-950"><X size={18}/></button>
+                          <button onClick={() => saveTaskEdit(task.id, !!task.isRecurring)} className="p-2 bg-emerald-500 text-white rounded-lg shadow-sm"><Check size={18}/></button>
+                        </div>
                       </div>
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => setEditingTaskId(null)} className="p-2 text-slate-500 hover:text-slate-950"><X size={18}/></button>
-                        <button onClick={() => saveTaskEdit(task.id, !!task.isRecurring)} className="p-2 bg-emerald-500 text-white rounded-lg shadow-sm"><Check size={18}/></button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <button onClick={() => toggleTask(task.id, !!task.isRecurring)} className={`transition-all hover:scale-110 ${task.completed ? 'text-emerald-600' : 'text-slate-400'}`}>{task.completed ? <CheckCircle2 size={24} /> : <Circle size={24} />}</button>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5"><span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-900 uppercase border border-indigo-300">{task.subject}</span>{task.isRecurring && <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 uppercase border border-amber-300 flex items-center gap-1"><RefreshCw size={8}/> {WEEKDAYS_SHORT[task.recurrenceDay || 0]}</span>}</div>
-                        <span className={`text-[12px] font-bold truncate block ${task.completed ? 'text-slate-400 line-through' : 'text-slate-950 dark:text-slate-100'}`}>{task.text}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <button onClick={() => startEditTask(task)} className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg hover:bg-athena-teal hover:text-white transition-all shadow-sm" title="Editar Planejamento"><Edit2 size={16}/></button>
-                        <button onClick={() => syncTaskToGoogle(task)} className="p-2.5 bg-athena-teal/10 text-athena-teal rounded-lg hover:bg-athena-teal hover:text-white transition-all shadow-sm" title="Sincronizar com Google"><CalendarIcon size={16}/></button>
-                        <button onClick={() => setItemToDelete({ id: task.id, type: 'task', isRecurring: !!task.isRecurring })} className="p-2.5 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Excluir Planejamento"><Trash2 size={16} /></button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => toggleTask(task.id, !!task.isRecurring)} className={`transition-all hover:scale-110 shrink-0 ${task.completed ? 'text-emerald-600' : 'text-slate-400'}`}>{task.completed ? <CheckCircle2 size={24} /> : <Circle size={24} />}</button>
+                          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => toggleExpand(task.id)}>
+                            <div className="flex items-center gap-2 mb-0.5"><span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-900 uppercase border border-indigo-300">{task.subject}</span>{task.isRecurring && <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 uppercase border border-amber-300 flex items-center gap-1"><RefreshCw size={8}/> {WEEKDAYS_SHORT[task.recurrenceDay || 0]}</span>}</div>
+                            <span className={`text-[12px] font-bold transition-all duration-300 ${task.completed ? 'text-slate-400 line-through' : 'text-slate-950 dark:text-slate-100'} ${isExpanded ? 'whitespace-normal' : 'truncate block'}`}>{task.text}</span>
+                          </div>
+                          <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+                            <button onClick={() => startEditTask(task)} className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg hover:bg-athena-teal hover:text-white transition-all shadow-sm" title="Editar Planejamento"><Edit2 size={16}/></button>
+                            <button onClick={() => syncTaskToGoogle(task)} className="p-2.5 bg-athena-teal/10 text-athena-teal rounded-lg hover:bg-athena-teal hover:text-white transition-all shadow-sm" title="Sincronizar com Google"><CalendarIcon size={16}/></button>
+                            <button onClick={() => setItemToDelete({ id: task.id, type: 'task', isRecurring: !!task.isRecurring })} className="p-2.5 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Excluir Planejamento"><Trash2 size={16} /></button>
+                          </div>
+                          {!isExpanded && <button onClick={() => toggleExpand(task.id)} className="sm:hidden text-slate-300"><ChevronRight size={16} /></button>}
+                        </div>
+                        {isExpanded && (
+                          <div className="mt-4 flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-1 duration-200">
+                            <button onClick={() => startEditTask(task)} className="sm:hidden flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-[10px] font-black uppercase"><Edit2 size={14}/> Editar</button>
+                            <button onClick={() => syncTaskToGoogle(task)} className="flex items-center gap-2 px-4 py-2 bg-athena-teal/10 text-athena-teal rounded-lg text-[10px] font-black uppercase"><CalendarIcon size={14}/> G-Calendar</button>
+                            <button onClick={() => setItemToDelete({ id: task.id, type: 'task', isRecurring: !!task.isRecurring })} className="flex items-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-lg text-[10px] font-black uppercase"><Trash2 size={14}/> Excluir</button>
+                            <button onClick={() => toggleExpand(task.id)} className="ml-auto p-2 text-slate-400"><X size={14}/></button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -325,52 +351,66 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
                </div>
             </div>
 
-            <div className="space-y-2">
-              {activeDayCommitments.map((comm) => (
-                <div key={comm.id} className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-slate-800/50 border-2 border-slate-300 dark:border-slate-800 shadow-sm transition-all hover:border-amber-500/50">
-                  {editingCommId === comm.id ? (
-                    <div className="flex-1 space-y-3 animate-in fade-in duration-200">
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <input 
-                          type="time" 
-                          className="p-2 rounded-lg border-2 border-athena-coral dark:bg-slate-900 text-[10px] font-black outline-none"
-                          value={editCommTime}
-                          onChange={(e) => setEditCommTime(e.target.value)}
-                        />
-                        <input 
-                          type="text" 
-                          className="flex-1 p-2 rounded-lg border-2 border-athena-coral dark:bg-slate-900 text-[11px] font-bold outline-none"
-                          value={editCommText}
-                          onChange={(e) => setEditCommText(e.target.value)}
-                          autoFocus
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => setEditingCommId(null)} className="p-2 text-slate-500 hover:text-slate-950"><X size={18}/></button>
-                        <button onClick={() => saveCommEdit(comm.id, !!comm.isRecurring)} className="p-2 bg-emerald-500 text-white rounded-lg shadow-sm"><Check size={18}/></button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex flex-col items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 p-2 rounded-lg min-w-[50px] shadow-inner">
-                        <Clock size={12} className="mb-0.5" />
-                        <span className="text-[10px] font-black leading-none">{comm.time}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-bold text-slate-950 dark:text-slate-100 truncate">{comm.text}</p>
-                        <div className="flex gap-2 mt-1">
-                          {comm.isRecurring && <span className="text-[7px] font-black text-athena-coral uppercase flex items-center gap-1"><RefreshCw size={8} /> Repete {WEEKDAYS_SHORT[comm.recurrenceDay || 0]}</span>}
+            <div className="space-y-3">
+              {activeDayCommitments.map((comm) => {
+                const isExpanded = expandedItems.has(comm.id);
+                return (
+                  <div key={comm.id} className="flex flex-col p-4 rounded-xl bg-white dark:bg-slate-800/50 border-2 border-slate-300 dark:border-slate-800 shadow-sm transition-all hover:border-amber-500/50">
+                    {editingCommId === comm.id ? (
+                      <div className="flex-1 space-y-3 animate-in fade-in duration-200">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input 
+                            type="time" 
+                            className="p-2 rounded-lg border-2 border-athena-coral dark:bg-slate-900 text-[10px] font-black outline-none"
+                            value={editCommTime}
+                            onChange={(e) => setEditCommTime(e.target.value)}
+                          />
+                          <input 
+                            type="text" 
+                            className="flex-1 p-2 rounded-lg border-2 border-athena-coral dark:bg-slate-900 text-[11px] font-bold outline-none"
+                            value={editCommText}
+                            onChange={(e) => setEditCommText(e.target.value)}
+                            autoFocus
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => setEditingCommId(null)} className="p-2 text-slate-500 hover:text-slate-950"><X size={18}/></button>
+                          <button onClick={() => saveCommEdit(comm.id, !!comm.isRecurring)} className="p-2 bg-emerald-500 text-white rounded-lg shadow-sm"><Check size={18}/></button>
                         </div>
                       </div>
-                      <div className="flex gap-1.5">
-                        <button onClick={() => startEditComm(comm)} className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg hover:bg-amber-500 hover:text-white transition-all shadow-sm" title="Editar Compromisso"><Edit2 size={16}/></button>
-                        <button onClick={() => syncCommitmentToGoogle(comm)} className="p-2.5 bg-athena-teal/10 text-athena-teal rounded-lg hover:bg-athena-teal hover:text-white transition-all shadow-sm" title="Sincronizar com Google"><Share2 size={16} /></button>
-                        <button onClick={() => setItemToDelete({ id: comm.id, type: 'commitment', isRecurring: !!comm.isRecurring })} className="p-2.5 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Excluir Compromisso"><Trash2 size={16} /></button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-4">
+                          <div className="flex flex-col items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 p-2 rounded-lg min-w-[50px] shadow-inner shrink-0">
+                            <Clock size={12} className="mb-0.5" />
+                            <span className="text-[10px] font-black leading-none">{comm.time}</span>
+                          </div>
+                          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => toggleExpand(comm.id)}>
+                            <p className={`text-[12px] font-bold text-slate-950 dark:text-slate-100 transition-all duration-300 ${isExpanded ? 'whitespace-normal' : 'truncate block'}`}>{comm.text}</p>
+                            <div className="flex gap-2 mt-1">
+                              {comm.isRecurring && <span className="text-[7px] font-black text-athena-coral uppercase flex items-center gap-1"><RefreshCw size={8} /> Repete {WEEKDAYS_SHORT[comm.recurrenceDay || 0]}</span>}
+                            </div>
+                          </div>
+                          <div className="hidden sm:flex gap-1.5 shrink-0">
+                            <button onClick={() => startEditComm(comm)} className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg hover:bg-amber-500 hover:text-white transition-all shadow-sm" title="Editar Compromisso"><Edit2 size={16}/></button>
+                            <button onClick={() => syncCommitmentToGoogle(comm)} className="p-2.5 bg-athena-teal/10 text-athena-teal rounded-lg hover:bg-athena-teal hover:text-white transition-all shadow-sm" title="Sincronizar com Google"><Share2 size={16} /></button>
+                            <button onClick={() => setItemToDelete({ id: comm.id, type: 'commitment', isRecurring: !!comm.isRecurring })} className="p-2.5 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Excluir Compromisso"><Trash2 size={16} /></button>
+                          </div>
+                          {!isExpanded && <button onClick={() => toggleExpand(comm.id)} className="sm:hidden text-slate-300"><ChevronRight size={16} /></button>}
+                        </div>
+                        {isExpanded && (
+                          <div className="mt-4 flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-1 duration-200">
+                             <button onClick={() => startEditComm(comm)} className="sm:hidden flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-[10px] font-black uppercase"><Edit2 size={14}/> Editar</button>
+                             <button onClick={() => syncCommitmentToGoogle(comm)} className="flex items-center gap-2 px-4 py-2 bg-athena-teal/10 text-athena-teal rounded-lg text-[10px] font-black uppercase"><Share2 size={14}/> G-Calendar</button>
+                             <button onClick={() => setItemToDelete({ id: comm.id, type: 'commitment', isRecurring: !!comm.isRecurring })} className="flex items-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-900/10 text-rose-500 rounded-lg text-[10px] font-black uppercase"><Trash2 size={14}/> Excluir</button>
+                             <button onClick={() => toggleExpand(comm.id)} className="ml-auto p-2 text-slate-400"><X size={14}/></button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
 
