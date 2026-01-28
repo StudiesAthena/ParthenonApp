@@ -1,25 +1,20 @@
 
 import React, { useState } from 'react';
-import { SubjectProgress } from '../types';
+import { SubjectProgress, Subject } from '../types';
 import { Plus, Trash2, Calendar, Layout, CheckCircle2, PauseCircle, PlayCircle, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ProgressTrackerProps {
   progressList: SubjectProgress[];
-  subjects: string[];
+  subjects: Subject[];
   onUpdate: (list: SubjectProgress[]) => void;
 }
-
-const SUBJECT_COLORS = [
-  'bg-indigo-600', 'bg-emerald-600', 'bg-rose-600', 'bg-amber-600', 
-  'bg-violet-600', 'bg-cyan-600', 'bg-orange-600', 'bg-fuchsia-600'
-];
 
 export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, subjects, onUpdate }) => {
   const [showForm, setShowForm] = useState(false);
   const [newTopic, setNewTopic] = useState('');
   const [formData, setFormData] = useState<Partial<SubjectProgress>>({
-    subjectName: subjects[0] || '',
+    subjectName: subjects[0]?.name || '',
     status: 'Em andamento',
     notes_progresso: '',
     startDate: format(new Date(), 'yyyy-MM-dd'),
@@ -27,8 +22,8 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
   });
 
   const getSubjectColor = (name: string) => {
-    const idx = subjects.indexOf(name);
-    return idx !== -1 ? SUBJECT_COLORS[idx % SUBJECT_COLORS.length] : 'bg-slate-600';
+    // Busca a cor real definida no gerenciador de matérias
+    return subjects.find(s => s.name === name)?.color || '#94a3b8';
   };
 
   const handleAddTopic = () => {
@@ -51,7 +46,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
     };
     onUpdate([...progressList, newItem]);
     setShowForm(false);
-    setFormData({ subjectName: subjects[0] || '', status: 'Em andamento', notes_progresso: '', startDate: format(new Date(), 'yyyy-MM-dd'), topics: [] });
+    setFormData({ subjectName: subjects[0]?.name || '', status: 'Em andamento', notes_progresso: '', startDate: format(new Date(), 'yyyy-MM-dd'), topics: [] });
   };
 
   const removeProgress = (id: string) => onUpdate(progressList.filter(p => p.id !== id));
@@ -78,7 +73,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
                 value={formData.subjectName}
                 onChange={e => setFormData({...formData, subjectName: e.target.value})}
               >
-                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                {subjects.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
               </select>
             </div>
             <div>
@@ -142,7 +137,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
             </div>
             
             <h4 className="text-2xl font-black text-slate-950 dark:text-white mb-6 flex items-center gap-3">
-              <div className={`w-4 h-4 rounded-full border-2 border-black/10 shadow-sm ${getSubjectColor(item.subjectName)}`} />
+              <div className="w-4 h-4 rounded-full border-2 border-black/10 shadow-sm" style={{ backgroundColor: getSubjectColor(item.subjectName) }} />
               {item.subjectName}
             </h4>
 

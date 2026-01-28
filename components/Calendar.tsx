@@ -25,12 +25,12 @@ import {
   Calendar as CalIcon, MessageSquare, RefreshCw, 
   Clock, CheckCircle2, Circle, AlertCircle, BookOpen 
 } from 'lucide-react';
-import { CalendarData, ViewMode, DayData, Task, Commitment } from '../types';
+import { CalendarData, ViewMode, DayData, Task, Commitment, Subject } from '../types';
 import { DayDetailModal } from './DayDetailModal';
 
 interface CalendarProps {
   data: CalendarData;
-  subjects: string[];
+  subjects: Subject[];
   globalGoal: number;
   onUpdateDay: (dateKey: string, data: Partial<DayData>, recurringTasks?: Task[], recurringCommitments?: Commitment[]) => void;
   recurringTasks: Task[];
@@ -80,6 +80,11 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
     if (dayData.studyMinutes >= globalGoal) return 'border-emerald-600 bg-emerald-50/40 dark:bg-emerald-50/10';
     if (isPast(date) && !isToday(date) && dayData.studyMinutes < globalGoal && dayData.studyMinutes > 0) return 'border-rose-600 bg-rose-50/40 dark:bg-rose-50/10';
     return 'border-slate-400 dark:border-slate-800';
+  };
+
+  const getSubjectColor = (name?: string) => {
+    if (!name) return '#94a3b8';
+    return subjects.find(s => s.name === name)?.color || '#94a3b8';
   };
 
   const renderHeader = () => {
@@ -133,7 +138,14 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
                   <div className="flex gap-1 items-center">
                     {(Array.isArray(dayData?.commitments) && dayData.commitments.some(c => c.isSyncedWithGoogle)) && <img src="https://www.google.com/favicon.ico" alt="GCal" className="w-3 h-3 md:w-4 md:h-4 opacity-80" />}
                     {((Array.isArray(dayData?.commitments) && dayData.commitments.length > 0) || hasRecurringComm) && <div className="w-2 h-2 rounded-full bg-athena-coral shadow-sm animate-pulse" />}
-                    {((Array.isArray(dayData?.tasks) && dayData.tasks.length > 0) || hasRecurringTask) && <div className="w-2 h-2 rounded-full bg-athena-teal shadow-sm" />}
+                    
+                    <div className="flex -space-x-1">
+                      {dayData?.tasks?.slice(0, 3).map((t, idx) => (
+                        <div key={idx} className="w-2 h-2 rounded-full border border-white dark:border-slate-900" style={{ backgroundColor: getSubjectColor(t.subject) }} />
+                      ))}
+                      {(dayData?.tasks?.length || 0) > 3 && <div className="w-2 h-2 rounded-full bg-slate-300 flex items-center justify-center text-[5px] font-bold">+</div>}
+                      {hasRecurringTask && !dayData?.tasks?.length && <div className="w-2 h-2 rounded-full bg-slate-400" />}
+                    </div>
                   </div>
                 </div>
                 {isCurrentMonth && <div className="absolute bottom-0 left-0 w-full h-2 md:h-3 bg-slate-200 dark:bg-slate-800 z-0"><div className={`h-full transition-all duration-1000 shadow-inner ${percent === 100 ? 'bg-emerald-600' : 'bg-athena-coral'}`} style={{ width: `${percent}%` }} /></div>}
@@ -167,7 +179,12 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
                     <p className="text-[9px] font-bold text-slate-800 dark:text-slate-300 truncate">{(dayData?.commitments?.length || 0) + recurringCommitments.filter(c => c.recurrenceDay === weekday).length} Compromissos</p>
                   </div>
                 )}
-                {((Array.isArray(dayData?.tasks) && dayData.tasks.length > 0) || hasRecurringTask) && <div className="p-2 bg-athena-teal/5 dark:bg-athena-teal/10 border border-athena-teal/40 rounded-xl flex items-center gap-2"><BookOpen size={12} className="text-athena-teal shrink-0" /><p className="text-[9px] font-black text-athena-teal uppercase">{(dayData?.tasks?.length || 0) + recurringTasks.filter(t => t.recurrenceDay === weekday).length} Estudos</p></div>}
+                {((Array.isArray(dayData?.tasks) && dayData.tasks.length > 0) || hasRecurringTask) && (
+                  <div className="p-2 bg-athena-teal/5 dark:bg-athena-teal/10 border border-athena-teal/40 rounded-xl flex items-center gap-2">
+                    <BookOpen size={12} className="text-athena-teal shrink-0" />
+                    <p className="text-[9px] font-black text-athena-teal uppercase">{(dayData?.tasks?.length || 0) + recurringTasks.filter(t => t.recurrenceDay === weekday).length} Estudos</p>
+                  </div>
+                )}
               </div>
               <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800"><div className="flex justify-between items-center mb-1"><span className="text-[8px] font-black text-slate-600 uppercase">Progresso</span><span className="text-[8px] font-black text-slate-950 dark:text-white">{Math.round(percent)}%</span></div><div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-athena-coral" style={{ width: `${percent}%` }} /></div></div>
             </div>
@@ -217,17 +234,44 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {allComms.map((comm) => (
                         <div key={comm.id} className="p-4 bg-amber-50 dark:bg-amber-900/10 border-2 border-amber-200 rounded-2xl shadow-sm flex items-center gap-3">
-                           <div className="font-black text-[10px] bg-amber-200 dark:bg-amber-900/50 px-2 py-1 rounded-md text-amber-900 dark:text-amber-100 shrink-0">
-                              {comm.time}
+                           <div className="flex flex-col gap-1 items-center shrink-0">
+                              <div className="font-black text-[10px] bg-amber-200 dark:bg-amber-900/50 px-2 py-1 rounded-md text-amber-900 dark:text-amber-100">
+                                {comm.time}
+                              </div>
                            </div>
-                           <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">{comm.text}</p>
-                           {comm.isRecurring && <RefreshCw size={10} className="text-athena-coral" />}
+                           <div className="min-w-0 flex-1">
+                              {comm.subject && (
+                                <span className="text-[7px] font-black px-1.5 py-0.5 rounded text-white uppercase block w-fit mb-1 shadow-sm" style={{ backgroundColor: getSubjectColor(comm.subject) }}>
+                                  {comm.subject}
+                                </span>
+                              )}
+                              <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">{comm.text}</p>
+                           </div>
+                           {comm.isRecurring && <RefreshCw size={10} className="text-athena-coral shrink-0" />}
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-                {allTasks.length > 0 && <div className="space-y-2"><h5 className="text-[10px] font-black uppercase text-athena-teal tracking-widest flex items-center gap-2"><BookOpen size={14} /> Planejamento de Estudos</h5><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{allTasks.map((task, ti) => <div key={`${task.id}-${ti}`} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 rounded-xl"><div className={task.completed ? 'text-emerald-500' : 'text-slate-400'}>{task.completed ? <CheckCircle2 size={16} /> : <Circle size={16} />}</div><div className="min-w-0"><span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-900 uppercase block w-fit mb-0.5">{task.subject}</span><p className={`text-[11px] font-bold truncate ${task.completed ? 'text-slate-500 line-through' : 'text-slate-950 dark:text-white'}`}>{task.text}</p></div></div>)}</div></div>}
+                {allTasks.length > 0 && (
+                  <div className="space-y-2">
+                    <h5 className="text-[10px] font-black uppercase text-athena-teal tracking-widest flex items-center gap-2"><BookOpen size={14} /> Planejamento de Estudos</h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {allTasks.map((task, ti) => {
+                        const subColor = getSubjectColor(task.subject);
+                        return (
+                          <div key={`${task.id}-${ti}`} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-300 rounded-xl">
+                            <div className={task.completed ? 'text-emerald-500' : 'text-slate-400'}>{task.completed ? <CheckCircle2 size={16} /> : <Circle size={16} />}</div>
+                            <div className="min-w-0">
+                              <span className="text-[8px] font-black px-1.5 py-0.5 rounded text-white uppercase block w-fit mb-0.5 shadow-sm" style={{ backgroundColor: subColor }}>{task.subject}</span>
+                              <p className={`text-[11px] font-bold truncate ${task.completed ? 'text-slate-500 line-through' : 'text-slate-950 dark:text-white'}`}>{task.text}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );

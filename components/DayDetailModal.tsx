@@ -2,13 +2,13 @@
 import React, { useState } from 'react';
 import { format, addHours } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { X, Trash2, CheckCircle2, Circle, Clock, ChevronUp, ChevronDown, RefreshCw, AlertCircle, RotateCcw, BookOpen, CalendarCheck, Share2, Plus, Calendar as CalendarIcon, Edit2, Check, ChevronRight } from 'lucide-react';
-import { DayData, Task, Commitment } from '../types';
+import { X, Trash2, CheckCircle2, Circle, Clock, ChevronUp, ChevronDown, RefreshCw, AlertCircle, RotateCcw, BookOpen, CalendarCheck, Share2, Plus, Calendar as CalendarIcon, Edit2, Check, ChevronRight, Tag } from 'lucide-react';
+import { DayData, Task, Commitment, Subject } from '../types';
 
 interface DayDetailModalProps {
   date: Date;
   dayData: DayData;
-  subjects: string[];
+  subjects: Subject[];
   onClose: () => void;
   recurringTasks: Task[];
   recurringCommitments: Commitment[];
@@ -28,12 +28,13 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
   
   // States para novos itens
   const [newTaskText, setNewTaskText] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState(subjects[0] || '');
+  const [selectedSubject, setSelectedSubject] = useState(subjects[0]?.name || '');
   const [isRecurring, setIsRecurring] = useState(false);
   const [selectedRecurrenceDay, setSelectedRecurrenceDay] = useState(date.getDay());
 
   const [newCommitmentText, setNewCommitmentText] = useState('');
   const [newCommitmentTime, setNewCommitmentTime] = useState('12:00');
+  const [selectedCommSubject, setSelectedCommSubject] = useState<string>('');
   const [commIsRecurring, setCommIsRecurring] = useState(false);
   const [commRecurrenceDay, setCommRecurrenceDay] = useState(date.getDay());
   
@@ -45,6 +46,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
   const [editingCommId, setEditingCommId] = useState<string | null>(null);
   const [editCommText, setEditCommText] = useState('');
   const [editCommTime, setEditCommTime] = useState('');
+  const [editCommSubject, setEditCommSubject] = useState('');
 
   const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'task' | 'commitment', isRecurring?: boolean } | null>(null);
 
@@ -90,6 +92,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
       id: Math.random().toString(36).substr(2, 9),
       text: newCommitmentText.trim(),
       time: newCommitmentTime,
+      subject: selectedCommSubject || undefined,
       isSyncedWithGoogle: false,
       isRecurring: commIsRecurring,
       recurrenceDay: commIsRecurring ? commRecurrenceDay : undefined
@@ -105,6 +108,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
     }
     
     setNewCommitmentText('');
+    setSelectedCommSubject('');
     setCommIsRecurring(false);
   };
 
@@ -133,17 +137,18 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
     setEditingCommId(comm.id);
     setEditCommText(comm.text);
     setEditCommTime(comm.time);
+    setEditCommSubject(comm.subject || '');
   };
 
   const saveCommEdit = (id: string, isRecurring: boolean) => {
     if (!editCommText.trim()) return;
 
     if (isRecurring) {
-      setLocalRecurringCommitments(prev => prev.map(c => c.id === id ? { ...c, text: editCommText, time: editCommTime } : c).sort((a, b) => a.time.localeCompare(b.time)));
+      setLocalRecurringCommitments(prev => prev.map(c => c.id === id ? { ...c, text: editCommText, time: editCommTime, subject: editCommSubject || undefined } : c).sort((a, b) => a.time.localeCompare(b.time)));
     } else {
       setLocalDayData(prev => ({
         ...prev,
-        commitments: (prev.commitments || []).map(c => c.id === id ? { ...c, text: editCommText, time: editCommTime } : c).sort((a, b) => a.time.localeCompare(b.time))
+        commitments: (prev.commitments || []).map(c => c.id === id ? { ...c, text: editCommText, time: editCommTime, subject: editCommSubject || undefined } : c).sort((a, b) => a.time.localeCompare(b.time))
       }));
     }
     setEditingCommId(null);
@@ -157,7 +162,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
     const endHours = (parseInt(hours) + 1).toString().padStart(2, '0');
     const endTime = `${dateStr}T${endHours}${minutes}00`;
 
-    const description = encodeURIComponent(`Compromisso agendado pelo Parthenon Planner.\nHorário: ${comm.time}`);
+    const description = encodeURIComponent(`Compromisso agendado pelo Parthenon Planner.\nHorário: ${comm.time}${comm.subject ? `\nMatéria: ${comm.subject}` : ''}`);
     let gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startTime}/${endTime}&details=${description}&sf=true&output=xml`;
     
     if (comm.isRecurring && comm.recurrenceDay !== undefined) {
@@ -199,6 +204,11 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
 
   const adjustMinutes = (amount: number) => {
     setLocalDayData(prev => ({ ...prev, studyMinutes: Math.max(0, (prev.studyMinutes || 0) + amount) }));
+  };
+
+  const getSubjectColor = (name?: string) => {
+    if (!name) return '#94a3b8';
+    return subjects.find(s => s.name === name)?.color || '#94a3b8';
   };
 
   const activeDayTasks = [...(localDayData.tasks || []), ...localRecurringTasks.filter(t => t.recurrenceDay === dailyWeekday)];
@@ -246,7 +256,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
             <h4 className="text-[10px] md:text-[11px] font-black text-slate-900 dark:text-slate-400 uppercase tracking-widest block flex items-center gap-2"><BookOpen size={14} className="text-athena-teal" /> Planejamento de Estudos</h4>
             <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-300 dark:border-slate-700 shadow-sm">
               <div className="flex flex-col sm:flex-row gap-3">
-                <select className="p-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-[10px] font-black uppercase outline-none focus:border-amber-500" value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)}>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select>
+                <select className="p-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-[10px] font-black uppercase outline-none focus:border-amber-500" value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)}>{subjects.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}</select>
                 <input type="text" className="flex-1 p-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 dark:bg-slate-900 outline-none text-[11px] font-bold" placeholder="Assunto (ex: Trigonometria)..." value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTask()} />
               </div>
               <div className="flex flex-col gap-3 pt-2 border-t border-slate-200 dark:border-slate-700">
@@ -266,6 +276,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
             <div className="space-y-3">
               {activeDayTasks.map((task) => {
                 const isExpanded = expandedItems.has(task.id);
+                const subColor = getSubjectColor(task.subject);
                 return (
                   <div key={task.id} className="flex flex-col p-4 rounded-xl shadow-sm border-2 bg-white dark:bg-slate-800/50 border-slate-300 dark:border-slate-800 transition-all hover:border-athena-teal/50">
                     {editingTaskId === task.id ? (
@@ -276,7 +287,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
                             value={editTaskSubject}
                             onChange={(e) => setEditTaskSubject(e.target.value)}
                           >
-                            {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                            {subjects.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
                           </select>
                           <input 
                             type="text" 
@@ -296,7 +307,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
                         <div className="flex items-center gap-3">
                           <button onClick={() => toggleTask(task.id, !!task.isRecurring)} className={`transition-all hover:scale-110 shrink-0 ${task.completed ? 'text-emerald-600' : 'text-slate-400'}`}>{task.completed ? <CheckCircle2 size={24} /> : <Circle size={24} />}</button>
                           <div className="flex-1 min-w-0 cursor-pointer" onClick={() => toggleExpand(task.id)}>
-                            <div className="flex items-center gap-2 mb-0.5"><span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-900 uppercase border border-indigo-300">{task.subject}</span>{task.isRecurring && <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 uppercase border border-amber-300 flex items-center gap-1"><RefreshCw size={8}/> {WEEKDAYS_SHORT[task.recurrenceDay || 0]}</span>}</div>
+                            <div className="flex items-center gap-2 mb-0.5"><span className="text-[8px] font-black px-1.5 py-0.5 rounded text-white uppercase border shadow-sm" style={{ backgroundColor: subColor, borderColor: 'rgba(0,0,0,0.1)' }}>{task.subject}</span>{task.isRecurring && <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 uppercase border border-amber-300 flex items-center gap-1"><RefreshCw size={8}/> {WEEKDAYS_SHORT[task.recurrenceDay || 0]}</span>}</div>
                             <span className={`text-[12px] font-bold transition-all duration-300 ${task.completed ? 'text-slate-400 line-through' : 'text-slate-950 dark:text-slate-100'} ${isExpanded ? 'whitespace-normal' : 'truncate block'}`}>{task.text}</span>
                           </div>
                           <div className="hidden sm:flex items-center gap-1.5 shrink-0">
@@ -331,11 +342,18 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
                   <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                     <div className="flex gap-2">
                       <input type="time" className="flex-1 sm:w-28 p-3 rounded-xl border-2 border-amber-300 dark:border-amber-900 bg-white dark:bg-slate-900 text-xs font-black outline-none focus:border-amber-500" value={newCommitmentTime} onChange={(e) => setNewCommitmentTime(e.target.value)} />
-                      <button onClick={addCommitment} className="sm:hidden p-3 bg-athena-coral text-white rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"><Plus size={20} /></button>
                     </div>
                     <div className="flex flex-1 gap-2">
+                      <select 
+                        className="p-3 rounded-xl border-2 border-amber-300 dark:border-amber-900 bg-white dark:bg-slate-900 text-[10px] font-black uppercase outline-none" 
+                        value={selectedCommSubject} 
+                        onChange={(e) => setSelectedCommSubject(e.target.value)}
+                      >
+                        <option value="">Sem Matéria</option>
+                        {subjects.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                      </select>
                       <input type="text" className="flex-1 p-3 rounded-xl border-2 border-amber-300 dark:border-amber-900 bg-white dark:bg-slate-900 outline-none text-[11px] font-bold" placeholder="Descrição do compromisso..." value={newCommitmentText} onChange={(e) => setNewCommitmentText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addCommitment()} />
-                      <button onClick={addCommitment} className="hidden sm:flex p-3 bg-athena-coral text-white rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"><Plus size={20} /></button>
+                      <button onClick={addCommitment} className="p-3 bg-athena-coral text-white rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"><Plus size={20} /></button>
                     </div>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-amber-200 dark:border-amber-800">
@@ -354,6 +372,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
             <div className="space-y-3">
               {activeDayCommitments.map((comm) => {
                 const isExpanded = expandedItems.has(comm.id);
+                const commSubColor = getSubjectColor(comm.subject);
                 return (
                   <div key={comm.id} className="flex flex-col p-4 rounded-xl bg-white dark:bg-slate-800/50 border-2 border-slate-300 dark:border-slate-800 shadow-sm transition-all hover:border-amber-500/50">
                     {editingCommId === comm.id ? (
@@ -365,6 +384,14 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
                             value={editCommTime}
                             onChange={(e) => setEditCommTime(e.target.value)}
                           />
+                          <select 
+                            className="p-2 rounded-lg border-2 border-athena-coral dark:bg-slate-900 text-[9px] font-black uppercase outline-none"
+                            value={editCommSubject}
+                            onChange={(e) => setEditCommSubject(e.target.value)}
+                          >
+                            <option value="">Sem Matéria</option>
+                            {subjects.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                          </select>
                           <input 
                             type="text" 
                             className="flex-1 p-2 rounded-lg border-2 border-athena-coral dark:bg-slate-900 text-[11px] font-bold outline-none"
@@ -386,6 +413,13 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({ date, dayData, s
                             <span className="text-[10px] font-black leading-none">{comm.time}</span>
                           </div>
                           <div className="flex-1 min-w-0 cursor-pointer" onClick={() => toggleExpand(comm.id)}>
+                            {comm.subject && (
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="text-[7px] font-black px-1.5 py-0.5 rounded text-white uppercase border shadow-sm" style={{ backgroundColor: commSubColor, borderColor: 'rgba(0,0,0,0.1)' }}>
+                                  {comm.subject}
+                                </span>
+                              </div>
+                            )}
                             <p className={`text-[12px] font-bold text-slate-950 dark:text-slate-100 transition-all duration-300 ${isExpanded ? 'whitespace-normal' : 'truncate block'}`}>{comm.text}</p>
                             <div className="flex gap-2 mt-1">
                               {comm.isRecurring && <span className="text-[7px] font-black text-athena-coral uppercase flex items-center gap-1"><RefreshCw size={8} /> Repete {WEEKDAYS_SHORT[comm.recurrenceDay || 0]}</span>}

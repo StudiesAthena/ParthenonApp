@@ -12,7 +12,7 @@ import { LandingPage } from './components/LandingPage';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { TermsOfService } from './components/TermsOfService';
 import { FAQPage } from './components/FAQPage';
-import { AppState, DayData, CalendarData, Task, Commitment } from './types';
+import { AppState, DayData, CalendarData, Task, Commitment, Subject } from './types';
 import { 
   BarChart3, LayoutDashboard, Target, Sun, Moon, 
   Palette, Bird, ChevronUp, ChevronDown, Database, 
@@ -23,10 +23,27 @@ import { supabase } from './supabase';
 import { Session } from '@supabase/supabase-js';
 import { format } from 'date-fns';
 
-const STORAGE_KEY = 'parthenon_state_v15';
-const THEME_KEY = 'parthenon_theme_v15';
+const STORAGE_KEY = 'parthenon_state_v16';
+const THEME_KEY = 'parthenon_theme_v16';
 
-const DEFAULT_SUBJECTS = ['Português', 'Matemática', 'História', 'Geografia', 'Biologia', 'Física', 'Química', 'Inglês'];
+const PRESET_COLORS = [
+  '#0E6E85', '#FF7E67', '#F9C80E', '#10B981', '#3B82F6', 
+  '#6366F1', '#8B5CF6', '#D946EF', '#F43F5E', '#F97316',
+  '#84CC16', '#06B6D4', '#14B8A6', '#EC4899', '#71717A',
+  '#78350F', '#1E3A8A', '#365314', '#581C87', '#451A03',
+  '#FF0000', '#7F0000', '#FFABAB', '#00B404', '#FEF57A' 
+];
+
+const DEFAULT_SUBJECTS: Subject[] = [
+  { name: 'Português', color: '#0E6E85' },
+  { name: 'Matemática', color: '#FF7E67' },
+  { name: 'História', color: '#F9C80E' },
+  { name: 'Geografia', color: '#10B981' },
+  { name: 'Biologia', color: '#3B82F6' },
+  { name: 'Física', color: '#6366F1' },
+  { name: 'Química', color: '#8B5CF6' },
+  { name: 'Inglês', color: '#D946EF' }
+];
 
 const DEFAULT_STATE: AppState = {
   calendar: {},
@@ -75,33 +92,49 @@ const App: React.FC = () => {
   };
 
   const migrateData = (data: any): AppState => {
-    if (!data || !data.calendar) return data;
-    
-    const newCalendar: CalendarData = {};
-    Object.keys(data.calendar).forEach(key => {
-      const day = data.calendar[key];
-      let migratedCommitments: Commitment[] = [];
-      if (typeof day.commitments === 'string') {
-        if (day.commitments.trim() !== '') {
-          migratedCommitments = [{
-            id: 'legacy-' + Math.random().toString(36).substr(2, 5),
-            text: day.commitments,
-            time: '12:00',
-            isSyncedWithGoogle: !!day.isSyncedWithGoogle
-          }];
-        }
-      } else if (Array.isArray(day.commitments)) {
-        migratedCommitments = day.commitments;
-      }
+    if (!data) return DEFAULT_STATE;
 
-      newCalendar[key] = {
-        ...day,
-        commitments: migratedCommitments
-      };
-    });
+    // Migração de subjects: string[] -> Subject[]
+    let migratedSubjects: Subject[] = DEFAULT_SUBJECTS;
+    if (Array.isArray(data.subjects)) {
+      if (typeof data.subjects[0] === 'string') {
+        migratedSubjects = data.subjects.map((s: string, idx: number) => ({
+          name: s,
+          color: PRESET_COLORS[idx % PRESET_COLORS.length]
+        }));
+      } else {
+        migratedSubjects = data.subjects;
+      }
+    }
+
+    const newCalendar: CalendarData = {};
+    if (data.calendar) {
+      Object.keys(data.calendar).forEach(key => {
+        const day = data.calendar[key];
+        let migratedCommitments: Commitment[] = [];
+        if (typeof day.commitments === 'string') {
+          if (day.commitments.trim() !== '') {
+            migratedCommitments = [{
+              id: 'legacy-' + Math.random().toString(36).substr(2, 5),
+              text: day.commitments,
+              time: '12:00',
+              isSyncedWithGoogle: !!day.isSyncedWithGoogle
+            }];
+          }
+        } else if (Array.isArray(day.commitments)) {
+          migratedCommitments = day.commitments;
+        }
+
+        newCalendar[key] = {
+          ...day,
+          commitments: migratedCommitments
+        };
+      });
+    }
 
     return {
       ...data,
+      subjects: migratedSubjects,
       calendar: newCalendar,
       recurringTasks: Array.isArray(data.recurringTasks) ? data.recurringTasks : [],
       recurringCommitments: Array.isArray(data.recurringCommitments) ? data.recurringCommitments : [],
@@ -123,12 +156,10 @@ const App: React.FC = () => {
       }
     };
 
-    // Função para inicializar sessão tratando erros de refresh token
     const initSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
-          // Se o token for inválido, limpa o estado para evitar loops
           if (error.message.includes("refresh_token_not_found") || error.message.includes("refresh token")) {
             await supabase.auth.signOut();
             handleAuth(null);

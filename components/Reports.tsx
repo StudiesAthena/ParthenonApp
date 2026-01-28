@@ -15,12 +15,12 @@ import {
 import parseISO from 'date-fns/parseISO';
 import startOfDay from 'date-fns/startOfDay';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { CalendarData, DayData } from '../types';
+import { CalendarData, DayData, Subject } from '../types';
 import { Clock, CalendarDays, Zap, TrendingUp } from 'lucide-react';
 
 interface ReportsProps {
   calendar: CalendarData;
-  subjects: string[];
+  subjects: Subject[];
 }
 
 export const Reports: React.FC<ReportsProps> = ({ calendar }) => {

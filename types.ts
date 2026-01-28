@@ -12,9 +12,15 @@ export interface Commitment {
   id: string;
   text: string;
   time: string;
+  subject?: string;
   isSyncedWithGoogle?: boolean;
   isRecurring?: boolean;
   recurrenceDay?: number;
+}
+
+export interface Subject {
+  name: string;
+  color: string;
 }
 
 export interface DayData {
@@ -70,7 +76,7 @@ export interface Group {
 
 export interface AppState {
   calendar: CalendarData;
-  subjects: string[];
+  subjects: Subject[];
   generalNotes: string;
   subjectProgress: SubjectProgress[];
   recurringTasks: Task[];
