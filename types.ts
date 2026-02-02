@@ -27,11 +27,14 @@ export interface DayData {
   commitments: Commitment[];
   tasks: Task[];
   studyMinutes: number;
-  meta_tempo_minutos?: number;
-  isSyncedWithGoogle?: boolean;
 }
 
 export type CalendarData = Record<string, DayData>;
+
+/**
+ * Defines the available view modes for the Calendar component.
+ */
+export type ViewMode = 'month' | 'week' | 'agenda';
 
 export interface SubjectProgress {
   id: string;
@@ -43,14 +46,11 @@ export interface SubjectProgress {
   topics: string[];
 }
 
-export type ViewMode = 'month' | 'week' | 'agenda';
-
-// Interfaces para Turmas
 export interface GroupFile {
   id: string;
   name: string;
   url: string;
-  uploaded_by: string;
+  uploaded_by: string; 
   created_at: string;
   group_id: string;
   activity_id?: string;
@@ -62,8 +62,16 @@ export interface GroupActivity {
   group_id: string;
   name: string;
   instructions: string;
-  created_by: string;
+  created_by_id: string;
   created_at: string;
+}
+
+export interface GroupMember {
+  id: string;
+  group_id: string;
+  user_id: string;
+  full_name?: string;
+  joined_at: string;
 }
 
 export interface Group {
@@ -71,7 +79,7 @@ export interface Group {
   name: string;
   code: string;
   instructions: string;
-  created_by: string;
+  owner_id: string;
 }
 
 export interface AppState {
@@ -83,4 +91,5 @@ export interface AppState {
   recurringCommitments: Commitment[];
   globalDailyGoal: number;
   userEmail: string;
+  userName?: string;
 }

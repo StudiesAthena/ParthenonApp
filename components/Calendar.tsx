@@ -19,7 +19,7 @@ import startOfMonth from 'date-fns/startOfMonth';
 import startOfWeek from 'date-fns/startOfWeek';
 import parseISO from 'date-fns/parseISO';
 import startOfDay from 'date-fns/startOfDay';
-import { ptBR } from 'date-fns/locale/pt-BR';
+import { ptBR } from 'date-fns/locale';
 import { 
   ChevronLeft, ChevronRight, LayoutGrid, List, 
   Calendar as CalIcon, MessageSquare, RefreshCw, 
@@ -51,8 +51,8 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
       const entries = (Object.entries(data) as [string, DayData][])
         .filter(([dateKey, dayData]) => {
           const weekday = parseISO(dateKey).getDay();
-          const hasRecurringTask = recurringTasks.some(t => t.recurrenceDay === weekday);
-          const hasRecurringComm = recurringCommitments.some(c => c.recurrenceDay === weekday);
+          const hasRecurringTask = (recurringTasks || []).some(t => t.recurrenceDay === weekday);
+          const hasRecurringComm = (recurringCommitments || []).some(c => c.recurrenceDay === weekday);
           return (Array.isArray(dayData.commitments) && dayData.commitments.length > 0) || 
                  (Array.isArray(dayData.tasks) && dayData.tasks.length > 0) || 
                  hasRecurringTask || hasRecurringComm;
@@ -128,8 +128,8 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
             const statusStyle = getDayStatusColor(day);
             const percent = globalGoal > 0 ? Math.min(100, ((dayData?.studyMinutes || 0) / globalGoal) * 100) : 0;
             const weekday = day.getDay();
-            const hasRecurringTask = recurringTasks.some(t => t.recurrenceDay === weekday);
-            const hasRecurringComm = recurringCommitments.some(c => c.recurrenceDay === weekday);
+            const hasRecurringTask = (recurringTasks || []).some(t => t.recurrenceDay === weekday);
+            const hasRecurringComm = (recurringCommitments || []).some(c => c.recurrenceDay === weekday);
 
             return (
               <div key={day.toString()} onClick={() => setSelectedDate(day)} className={`min-h-[70px] md:min-h-[140px] p-2 md:p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col relative overflow-hidden shadow-md ${!isCurrentMonth ? 'bg-slate-200/40 text-slate-500 dark:text-slate-800 border-slate-400 dark:border-transparent opacity-60' : `bg-white dark:bg-slate-900 ${statusStyle}`} ${isToday(day) ? 'ring-4 ring-amber-500/20 !border-amber-600' : ''} hover:scale-[1.02] hover:shadow-xl z-10`}>
@@ -166,8 +166,8 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
           const dayData = data[dateKey];
           const percent = globalGoal > 0 ? Math.min(100, ((dayData?.studyMinutes || 0) / globalGoal) * 100) : 0;
           const weekday = day.getDay();
-          const hasRecurringTask = recurringTasks.some(t => t.recurrenceDay === weekday);
-          const hasRecurringComm = recurringCommitments.some(c => c.recurrenceDay === weekday);
+          const hasRecurringTask = (recurringTasks || []).some(t => t.recurrenceDay === weekday);
+          const hasRecurringComm = (recurringCommitments || []).some(c => c.recurrenceDay === weekday);
 
           return (
             <div key={dateKey} onClick={() => setSelectedDate(day)} className={`p-5 rounded-[2rem] border-2 bg-white dark:bg-slate-900 shadow-xl cursor-pointer transition-all hover:scale-105 relative ${isToday(day) ? 'border-amber-500 ring-4 ring-amber-500/10' : 'border-slate-500 dark:border-slate-800'}`}>
@@ -176,13 +176,13 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
                 {((Array.isArray(dayData?.commitments) && dayData.commitments.length > 0) || hasRecurringComm) && (
                   <div className="p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-900/50 rounded-xl flex items-center gap-2">
                     <MessageSquare size={12} className="text-amber-600 shrink-0" />
-                    <p className="text-[9px] font-bold text-slate-800 dark:text-slate-300 truncate">{(dayData?.commitments?.length || 0) + recurringCommitments.filter(c => c.recurrenceDay === weekday).length} Compromissos</p>
+                    <p className="text-[9px] font-bold text-slate-800 dark:text-slate-300 truncate">{(dayData?.commitments?.length || 0) + (recurringCommitments || []).filter(c => c.recurrenceDay === weekday).length} Compromissos</p>
                   </div>
                 )}
                 {((Array.isArray(dayData?.tasks) && dayData.tasks.length > 0) || hasRecurringTask) && (
                   <div className="p-2 bg-athena-teal/5 dark:bg-athena-teal/10 border border-athena-teal/40 rounded-xl flex items-center gap-2">
                     <BookOpen size={12} className="text-athena-teal shrink-0" />
-                    <p className="text-[9px] font-black text-athena-teal uppercase">{(dayData?.tasks?.length || 0) + recurringTasks.filter(t => t.recurrenceDay === weekday).length} Estudos</p>
+                    <p className="text-[9px] font-black text-athena-teal uppercase">{(dayData?.tasks?.length || 0) + (recurringTasks || []).filter(t => t.recurrenceDay === weekday).length} Estudos</p>
                   </div>
                 )}
               </div>
@@ -198,8 +198,8 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
     const entries = (Object.entries(data) as [string, DayData][])
       .filter(([dateKey, dayData]) => {
           const weekday = parseISO(dateKey).getDay();
-          const hasRecurringTask = recurringTasks.some(t => t.recurrenceDay === weekday);
-          const hasRecurringComm = recurringCommitments.some(c => c.recurrenceDay === weekday);
+          const hasRecurringTask = (recurringTasks || []).some(t => t.recurrenceDay === weekday);
+          const hasRecurringComm = (recurringCommitments || []).some(c => c.recurrenceDay === weekday);
           return (Array.isArray(dayData.commitments) && dayData.commitments.length > 0) || (Array.isArray(dayData.tasks) && dayData.tasks.length > 0) || hasRecurringTask || hasRecurringComm;
       })
       .sort((a, b) => a[0].localeCompare(b[0])); 
@@ -218,8 +218,8 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
         {(visibleEntries.length > 0 ? visibleEntries : entries.slice(-1)).map(([dateKey, dayData]) => {
           const dayDate = parseISO(dateKey);
           const weekday = dayDate.getDay();
-          const dailyRecurringTasks = recurringTasks.filter(t => t.recurrenceDay === weekday);
-          const dailyRecurringComms = recurringCommitments.filter(c => c.recurrenceDay === weekday);
+          const dailyRecurringTasks = (recurringTasks || []).filter(t => t.recurrenceDay === weekday);
+          const dailyRecurringComms = (recurringCommitments || []).filter(c => c.recurrenceDay === weekday);
           
           const allTasks = [...(Array.isArray(dayData.tasks) ? dayData.tasks : []), ...dailyRecurringTasks];
           const allComms = [...(Array.isArray(dayData.commitments) ? dayData.commitments : []), ...dailyRecurringComms].sort((a, b) => a.time.localeCompare(b.time));
@@ -292,8 +292,8 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
           dayData={data[format(selectedDate, 'yyyy-MM-dd')] || { commitments: [], tasks: [], studyMinutes: 0 }}
           subjects={subjects}
           onClose={() => setSelectedDate(null)}
-          recurringTasks={recurringTasks}
-          recurringCommitments={recurringCommitments}
+          recurringTasks={recurringTasks || []}
+          recurringCommitments={recurringCommitments || []}
           onSave={(updatedDay, updatedRecurringTasks, updatedRecurringComms) => {
             onUpdateDay(format(selectedDate, 'yyyy-MM-dd'), updatedDay, updatedRecurringTasks, updatedRecurringComms);
             setSelectedDate(null);

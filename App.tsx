@@ -17,7 +17,7 @@ import {
   BarChart3, LayoutDashboard, Target, Sun, Moon, 
   Palette, Bird, ChevronUp, ChevronDown, Database, 
   CloudUpload, LogOut, User, CheckCircle, WifiOff, Sparkles, Users,
-  Share2, Calendar as CalendarIcon
+  Share2, Edit2, X, Save, Loader2
 } from 'lucide-react';
 import { supabase } from './supabase';
 import { Session } from '@supabase/supabase-js';
@@ -37,12 +37,7 @@ const PRESET_COLORS = [
 const DEFAULT_SUBJECTS: Subject[] = [
   { name: 'Português', color: '#0E6E85' },
   { name: 'Matemática', color: '#FF7E67' },
-  { name: 'História', color: '#F9C80E' },
-  { name: 'Geografia', color: '#10B981' },
-  { name: 'Biologia', color: '#3B82F6' },
-  { name: 'Física', color: '#6366F1' },
-  { name: 'Química', color: '#8B5CF6' },
-  { name: 'Inglês', color: '#D946EF' }
+  { name: 'História', color: '#F9C80E' }
 ];
 
 const DEFAULT_STATE: AppState = {
@@ -53,12 +48,14 @@ const DEFAULT_STATE: AppState = {
   recurringTasks: [],
   recurringCommitments: [],
   globalDailyGoal: 120,
-  userEmail: ''
+  userEmail: '',
+  userName: ''
 };
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [view, setView] = useState<'main' | 'privacy' | 'terms' | 'faq'>('main');
   const [activeTab, setActiveTab] = useState<'calendar' | 'reports' | 'progress' | 'insights' | 'groups'>('calendar');
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -72,6 +69,7 @@ const App: React.FC = () => {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
   
+  const [tempName, setTempName] = useState('');
   const skipNextPush = useRef(false);
 
   const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
@@ -82,115 +80,33 @@ const App: React.FC = () => {
   };
 
   const handleFetchError = (err: any) => {
+    if (err?.code === 'PGRST116') return;
     const isNetworkError = err?.message?.includes('fetch') || !navigator.onLine;
-    let msg = isNetworkError 
-      ? 'Falha de conexão: Verifique sua internet.' 
-      : (err?.message || 'Erro ao sincronizar dados.');
-
-    setSyncError(msg);
-    showNotification(msg, isNetworkError ? 'info' : 'error');
-  };
-
-  const migrateData = (data: any): AppState => {
-    if (!data) return DEFAULT_STATE;
-
-    // Migração de subjects: string[] -> Subject[]
-    let migratedSubjects: Subject[] = DEFAULT_SUBJECTS;
-    if (Array.isArray(data.subjects)) {
-      if (typeof data.subjects[0] === 'string') {
-        migratedSubjects = data.subjects.map((s: string, idx: number) => ({
-          name: s,
-          color: PRESET_COLORS[idx % PRESET_COLORS.length]
-        }));
-      } else {
-        migratedSubjects = data.subjects;
-      }
-    }
-
-    const newCalendar: CalendarData = {};
-    if (data.calendar) {
-      Object.keys(data.calendar).forEach(key => {
-        const day = data.calendar[key];
-        let migratedCommitments: Commitment[] = [];
-        if (typeof day.commitments === 'string') {
-          if (day.commitments.trim() !== '') {
-            migratedCommitments = [{
-              id: 'legacy-' + Math.random().toString(36).substr(2, 5),
-              text: day.commitments,
-              time: '12:00',
-              isSyncedWithGoogle: !!day.isSyncedWithGoogle
-            }];
-          }
-        } else if (Array.isArray(day.commitments)) {
-          migratedCommitments = day.commitments;
-        }
-
-        newCalendar[key] = {
-          ...day,
-          commitments: migratedCommitments
-        };
-      });
-    }
-
-    return {
-      ...data,
-      subjects: migratedSubjects,
-      calendar: newCalendar,
-      recurringTasks: Array.isArray(data.recurringTasks) ? data.recurringTasks : [],
-      recurringCommitments: Array.isArray(data.recurringCommitments) ? data.recurringCommitments : [],
-      subjectProgress: Array.isArray(data.subjectProgress) ? data.subjectProgress : []
-    };
+    setSyncError(isNetworkError ? 'Falha de conexão.' : (err?.message || 'Erro de sincronização.'));
   };
 
   useEffect(() => {
-    const handleAuth = async (currentSession: Session | null) => {
-      setSession(currentSession);
-      if (currentSession?.user?.email) {
-        const email = String(currentSession.user.email);
-        setState(prev => ({ ...prev, userEmail: email }));
-        await pullFromCloud(email);
-        setIsInitialized(true);
-      } else {
-        setState(DEFAULT_STATE);
-        setIsInitialized(false);
-      }
-    };
-
     const initSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          if (error.message.includes("refresh_token_not_found") || error.message.includes("refresh token")) {
-            await supabase.auth.signOut();
-            handleAuth(null);
-          } else {
-            handleAuth(session);
-          }
-        } else {
-          handleAuth(session);
-        }
-      } catch (err) {
-        console.error("Auth init error:", err);
-        handleAuth(null);
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      if (session?.user?.id) {
+        await pullFromCloud(session.user.id);
+        setIsInitialized(true);
       }
     };
-
     initSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      handleAuth(session);
+      setSession(session);
+      if (session?.user?.id) pullFromCloud(session.user.id).then(() => setIsInitialized(true));
+      else { setState(DEFAULT_STATE); setIsInitialized(false); }
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
     if (!session || !isInitialized) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    if (skipNextPush.current) {
-      skipNextPush.current = false;
-      return;
-    }
+    if (skipNextPush.current) { skipNextPush.current = false; return; }
     const timer = setTimeout(() => { pushToCloud(); }, 3000);
     return () => clearTimeout(timer);
   }, [state, session, isInitialized]);
@@ -203,17 +119,20 @@ const App: React.FC = () => {
   }, [theme]);
 
   const pushToCloud = async () => {
-    if (!session?.user?.email || !navigator.onLine) return;
+    if (!session?.user?.id || !navigator.onLine) return;
     setSyncing(true);
     setSyncError(null);
     try {
       const { error } = await supabase
         .from('user_states')
         .upsert({ 
-          email: session.user.email.toLowerCase().trim(), 
+          user_id: session.user.id,
+          email: session.user.email?.toLowerCase().trim(), 
           data: state,
+          full_name: state.userName || null,
           updated_at: new Date().toISOString()
-        }, { onConflict: 'email' });
+        }, { onConflict: 'user_id' }); // Conflito resolvido pela Unique Constraint no user_id
+        
       if (error) throw error;
       setLastSync(new Date().toLocaleTimeString());
     } catch (err: any) {
@@ -223,22 +142,20 @@ const App: React.FC = () => {
     }
   };
 
-  const pullFromCloud = async (userEmail: string) => {
+  const pullFromCloud = async (userId: string) => {
     setSyncing(true);
-    setSyncError(null);
     try {
       const { data, error } = await supabase
         .from('user_states')
-        .select('data')
-        .eq('email', userEmail.toLowerCase().trim())
-        .single();
+        .select('data, full_name')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
-
-      if (data?.data) {
+      if (error) throw error;
+      if (data) {
         skipNextPush.current = true;
-        const migratedState = migrateData(data.data);
-        setState(migratedState);
+        setState({ ...data.data, userName: data.full_name || data.data.userName || '' });
+        setTempName(data.full_name || data.data.userName || '');
         setLastSync(new Date().toLocaleTimeString());
       }
     } catch (err: any) {
@@ -248,206 +165,128 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    setSyncing(true);
-    try { await pushToCloud(); } catch (e) {}
-    await supabase.auth.signOut();
-    setShowAuth(false);
-    setView('main');
-  };
-
   const updateGlobalGoal = (newGoal: number) => {
     setState(prev => ({ ...prev, globalDailyGoal: Math.max(0, newGoal) }));
   };
 
-  const updateCalendarDay = (dateKey: string, dayData: Partial<DayData>, recurringTasks?: Task[], recurringCommitments?: Commitment[]) => {
-    setState(prev => {
-      const existingDay: DayData = prev.calendar[dateKey] || { commitments: [], tasks: [], studyMinutes: 0 };
-      
-      const currentCommitments = Array.isArray(existingDay.commitments) ? existingDay.commitments : [];
-      const updatedCommitments = dayData.commitments !== undefined 
-        ? (Array.isArray(dayData.commitments) ? dayData.commitments : currentCommitments)
-        : currentCommitments;
-
-      return {
-        ...prev,
-        calendar: {
-          ...prev.calendar,
-          [dateKey]: { 
-            ...existingDay, 
-            ...dayData, 
-            commitments: updatedCommitments 
-          } as DayData
-        },
-        recurringTasks: recurringTasks !== undefined ? recurringTasks : prev.recurringTasks,
-        recurringCommitments: recurringCommitments !== undefined ? recurringCommitments : prev.recurringCommitments
-      };
-    });
+  const handleSaveProfile = async () => {
+    setState(prev => ({ ...prev, userName: tempName }));
+    setShowProfileModal(false);
+    showNotification('Perfil atualizado!', 'success');
   };
 
-  if (view === 'privacy') {
-    return <PrivacyPolicy theme={theme} toggleTheme={toggleTheme} onBack={() => setView('main')} />;
-  }
+  const updateCalendarDay = (dateKey: string, dayData: Partial<DayData>, recurringTasks?: Task[], recurringCommitments?: Commitment[]) => {
+    setState(prev => ({
+      ...prev,
+      calendar: {
+        ...prev.calendar,
+        [dateKey]: { ...(prev.calendar[dateKey] || { commitments: [], tasks: [], studyMinutes: 0 }), ...dayData }
+      },
+      recurringTasks: recurringTasks || prev.recurringTasks,
+      recurringCommitments: recurringCommitments || prev.recurringCommitments
+    }));
+  };
 
-  if (view === 'terms') {
-    return <TermsOfService theme={theme} toggleTheme={toggleTheme} onBack={() => setView('main')} />;
-  }
-
-  if (view === 'faq') {
-    return <FAQPage theme={theme} toggleTheme={toggleTheme} onBack={() => setView('main')} />;
+  if (view !== 'main') {
+    const BackBtn = ({ onClick }: { onClick: any }) => (
+      <button onClick={onClick} className="fixed top-6 left-6 p-3 bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-300 dark:border-slate-800 shadow-xl z-50"><X size={20}/></button>
+    );
+    if (view === 'privacy') return <><BackBtn onClick={() => setView('main')}/><PrivacyPolicy theme={theme} toggleTheme={toggleTheme} onBack={() => setView('main')}/></>;
+    if (view === 'terms') return <><BackBtn onClick={() => setView('main')}/><TermsOfService theme={theme} toggleTheme={toggleTheme} onBack={() => setView('main')}/></>;
+    if (view === 'faq') return <><BackBtn onClick={() => setView('main')}/><FAQPage theme={theme} toggleTheme={toggleTheme} onBack={() => setView('main')}/></>;
   }
 
   if (!session) {
-    if (showAuth) {
-      return <Auth theme={theme} toggleTheme={toggleTheme} onBackToLanding={() => setShowAuth(false)} />;
-    }
-    return (
-      <LandingPage 
-        onLoginClick={() => setShowAuth(true)} 
-        theme={theme} 
-        toggleTheme={toggleTheme} 
-        onPrivacyClick={() => setView('privacy')} 
-        onTermsClick={() => setView('terms')}
-        onFAQClick={() => setView('faq')}
-      />
-    );
+    if (showAuth) return <Auth theme={theme} toggleTheme={toggleTheme} onBackToLanding={() => setShowAuth(false)} />;
+    return <LandingPage onLoginClick={() => setShowAuth(true)} theme={theme} toggleTheme={toggleTheme} onPrivacyClick={() => setView('privacy')} onTermsClick={() => setView('terms')} onFAQClick={() => setView('faq')} />;
   }
 
   const todayKey = format(new Date(), 'yyyy-MM-dd');
   const todayData = state.calendar[todayKey];
-  const progressPercent = state.globalDailyGoal 
-    ? Math.min(100, ((todayData?.studyMinutes || 0) / state.globalDailyGoal) * 100) 
-    : 0;
+  const progressPercent = state.globalDailyGoal ? Math.min(100, ((todayData?.studyMinutes || 0) / state.globalDailyGoal) * 100) : 0;
 
   const SidebarWidgets = () => (
-    <div className="space-y-6 md:space-y-8 p-3 md:p-0 bg-white dark:bg-slate-900 md:bg-transparent">
-      {/* Perfil & Sync */}
-      <section className="bg-slate-100 dark:bg-slate-800/40 p-4 rounded-2xl border-2 border-slate-500 dark:border-slate-700 shadow-sm space-y-3">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 rounded-lg bg-amber-500 text-slate-900 flex items-center justify-center">
-            <User size={16} />
-          </div>
+    <div className="space-y-6">
+      <section className="bg-slate-100 dark:bg-slate-800/40 p-4 rounded-2xl border-2 border-slate-500 dark:border-slate-700 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-athena-teal text-white flex items-center justify-center shadow-md"><User size={20} /></div>
           <div className="flex-1 min-w-0">
-            <p className="text-[9px] font-black text-slate-700 dark:text-slate-500 uppercase tracking-widest">Estudante Logado</p>
-            <p className="text-[10px] font-bold text-slate-950 dark:text-white truncate">{String(session.user.email || '')}</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase">Estudante</p>
+            <p className="text-sm font-black truncate">{state.userName || 'Definir Nome'}</p>
           </div>
+          <button onClick={() => setShowProfileModal(true)} className="p-2 text-slate-400 hover:text-athena-teal"><Edit2 size={16}/></button>
         </div>
-        
         <div className="grid grid-cols-2 gap-2">
-           <button onClick={() => pushToCloud()} disabled={syncing} className="py-2.5 bg-white dark:bg-slate-900 border border-slate-500 dark:border-slate-700 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1 hover:bg-slate-100 transition-all text-slate-800 dark:text-slate-300 disabled:opacity-50">
+          <button onClick={() => pushToCloud()} disabled={syncing} className="py-2 bg-white dark:bg-slate-900 border border-slate-400 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1 hover:bg-slate-50 disabled:opacity-50">
             <CloudUpload size={12} className="text-amber-600" /> {syncing ? '...' : 'Salvar'}
           </button>
-          <button onClick={handleLogout} className="py-2.5 bg-rose-100 dark:bg-rose-900/20 border border-rose-400 dark:border-rose-900/50 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1 hover:bg-rose-200 transition-all text-rose-700 dark:text-rose-400">
+          <button onClick={() => supabase.auth.signOut()} className="py-2 bg-rose-100 dark:bg-rose-900/20 border border-rose-400 rounded-lg text-[8px] font-black uppercase flex items-center justify-center gap-1 hover:bg-rose-200 text-rose-700">
             <LogOut size={12} /> Sair
           </button>
         </div>
-
-        {syncError && (
-          <div className="flex flex-col gap-2 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-300 dark:border-rose-900/40">
-            <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
-              <WifiOff size={14} className="shrink-0" />
-              <span className="text-[8px] font-black uppercase tracking-tight">{String(syncError)}</span>
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-center gap-2 pt-1 border-t border-slate-400 dark:border-slate-700">
+        <div className="mt-3 pt-3 border-t border-slate-400 dark:border-slate-700 flex items-center justify-center gap-2">
           <Database size={10} className={syncing ? 'animate-pulse text-amber-500' : 'text-slate-400'} />
-          <span className="text-[7px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">
-            {syncing ? 'Sincronizando...' : (lastSync ? `Salvo às ${lastSync}` : 'Sincronizado')}
-          </span>
+          <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">{lastSync ? `Salvo às ${lastSync}` : 'Sincronizado'}</span>
         </div>
-      </section>
-
-      {/* Google Calendar Integration Widget */}
-      <section className="bg-white dark:bg-slate-800 p-4 rounded-2xl border-2 border-athena-teal shadow-sm group hover:border-athena-coral transition-colors">
-        <h2 className="text-[10px] font-black uppercase tracking-widest text-athena-teal dark:text-athena-teal mb-3 flex items-center gap-2">
-           <Share2 size={14} /> Conexões Externas
-        </h2>
-        <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
-          <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center border border-slate-200">
-             <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
-          </div>
-          <div className="flex-1">
-            <p className="text-[9px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Google Calendar</p>
-            <p className="text-[8px] font-bold text-emerald-600 uppercase">Sincronia Ativa</p>
-          </div>
-        </div>
-        <p className="text-[8px] font-bold text-slate-500 mt-3 leading-tight px-1">
-          Seus compromissos podem ser exportados com um clique para sua agenda pessoal.
-        </p>
       </section>
 
       <section className="bg-white dark:bg-slate-800 p-4 rounded-2xl border-2 border-amber-600 shadow-sm">
-        <h2 className="text-[10px] font-black uppercase tracking-widest text-blue-900 dark:text-amber-500 mb-3 flex items-center gap-2">
-          <Target size={14} /> Meta Diária Parthenon
-        </h2>
+        <h2 className="text-[10px] font-black uppercase tracking-widest text-blue-900 dark:text-amber-500 mb-3 flex items-center gap-2"><Target size={14} /> Meta Diária</h2>
         <div className="flex items-center justify-between">
-          <span className="text-3xl font-black text-slate-950 dark:text-white leading-none">{state.globalDailyGoal}m</span>
+          <span className="text-3xl font-black">{state.globalDailyGoal}m</span>
           <div className="flex flex-col gap-1">
-            <button onClick={() => updateGlobalGoal(state.globalDailyGoal + 5)} className="p-1.5 bg-amber-500 text-slate-900 rounded-md hover:scale-105 active:scale-95 transition-all shadow-md"><ChevronUp size={16}/></button>
-            <button onClick={() => updateGlobalGoal(state.globalDailyGoal - 5)} className="p-1.5 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-md hover:scale-105 active:scale-95 transition-all border border-slate-500 dark:border-slate-600"><ChevronDown size={16}/></button>
+            <button onClick={() => updateGlobalGoal(state.globalDailyGoal + 5)} className="p-1.5 bg-amber-500 text-white rounded-md hover:scale-105 transition-all"><ChevronUp size={16}/></button>
+            <button onClick={() => updateGlobalGoal(state.globalDailyGoal - 5)} className="p-1.5 bg-slate-300 dark:bg-slate-700 rounded-md hover:scale-105 transition-all"><ChevronDown size={16}/></button>
           </div>
         </div>
       </section>
 
       <section>
-        <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-950 dark:text-slate-400 mb-2">Bloco de Notas</h2>
-        <SideNotes value={String(state.generalNotes || '')} onChange={(v) => setState(p => ({ ...p, generalNotes: String(v) }))} />
+        <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Bloco de Notas</h2>
+        <SideNotes value={state.generalNotes} onChange={(v) => setState(p => ({ ...p, generalNotes: v }))} />
       </section>
 
       <section>
-        <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-950 dark:text-slate-400 mb-2 flex items-center gap-2">
-          <Palette size={14} className="text-athena-coral" /> Matérias Ativas
-        </h2>
-        <SubjectManager subjects={state.subjects || []} onUpdate={(s) => setState(p => ({ ...p, subjects: s }))} />
+        <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Matérias</h2>
+        <SubjectManager subjects={state.subjects} onUpdate={(s) => setState(p => ({ ...p, subjects: s }))} />
       </section>
-      
-      <div className="flex flex-col items-center gap-2 pt-2">
-        <button 
-          onClick={() => setView('privacy')} 
-          className="w-full text-center text-[8px] font-black uppercase text-slate-400 hover:text-athena-teal transition-colors tracking-widest"
-        >
-          Política de Privacidade
-        </button>
-        <button 
-          onClick={() => setView('terms')} 
-          className="w-full text-center text-[8px] font-black uppercase text-slate-400 hover:text-athena-teal transition-colors tracking-widest"
-        >
-          Termos de Serviço
-        </button>
-      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-200 dark:bg-slate-950 text-slate-950 dark:text-slate-100 flex flex-col md:flex-row transition-colors duration-300">
-      {notification && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top duration-300 pointer-events-none">
-          <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl shadow-2xl border-2 font-black uppercase text-[10px] tracking-widest
-            ${notification.type === 'success' ? 'bg-emerald-500 text-white border-emerald-400' : 
-              notification.type === 'error' ? 'bg-rose-600 text-white border-rose-400' :
-              'bg-athena-teal text-white border-athena-teal/50'}`}>
-            <CheckCircle size={18} />
-            {notification.message}
+    <div className="min-h-screen bg-slate-200 dark:bg-slate-950 flex flex-col md:flex-row transition-colors duration-300">
+      
+      {/* Modal Perfil */}
+      {showProfileModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] p-8 border-2 border-athena-teal shadow-2xl space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-2xl font-black uppercase tracking-tighter">Meu Perfil</h3>
+              <button onClick={() => setShowProfileModal(false)} className="text-slate-400 hover:text-rose-500"><X size={24}/></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-2">Nome Completo</label>
+                <input type="text" className="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 font-bold outline-none focus:border-athena-teal" value={tempName} onChange={e => setTempName(e.target.value)} placeholder="Seu nome..." />
+              </div>
+              <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-xl text-xs font-medium text-slate-500">E-mail: {session.user.email}</div>
+            </div>
+            <button onClick={handleSaveProfile} className="w-full py-4 bg-athena-teal text-white rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">Salvar Perfil</button>
           </div>
         </div>
       )}
 
+      {/* Sidebar Original */}
       <aside className="w-full md:w-64 lg:w-80 bg-white dark:bg-slate-900 border-b md:border-b-0 md:border-r border-slate-500 dark:border-slate-800 flex flex-col md:sticky top-0 md:h-screen z-30 shadow-xl overflow-y-auto no-scrollbar">
-        <div className="p-4 md:p-8 border-b border-slate-500 dark:border-slate-800 flex items-center justify-between bg-slate-100 dark:bg-slate-900/50">
+        <div className="p-6 border-b border-slate-500 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-athena-coral rounded-xl text-white shadow-lg flex items-center justify-center">
-              <Bird size={24} />
-            </div>
-            <h1 className="text-lg font-black tracking-tighter text-athena-teal dark:text-white uppercase leading-none">Parthenon<br/><span className="text-athena-coral text-sm">Planner</span></h1>
+            <div className="p-2 bg-athena-coral rounded-xl text-white shadow-lg"><Bird size={24} /></div>
+            <h1 className="text-lg font-black tracking-tighter text-athena-teal dark:text-white uppercase leading-none">Parthenon<br/><span className="text-athena-coral text-xs">Planner</span></h1>
           </div>
-          <button onClick={toggleTheme} className="p-2 rounded-xl bg-white dark:bg-slate-900 text-slate-950 dark:text-slate-300 border-2 border-slate-400 dark:border-slate-800 shadow-xl transition-colors">
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-          </button>
+          <button onClick={toggleTheme} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 border border-slate-400 dark:border-slate-700">{theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}</button>
         </div>
 
-        <nav className="p-2 md:p-6 grid grid-cols-2 md:flex md:flex-col gap-1.5 md:gap-2">
+        <nav className="p-4 flex flex-col gap-2">
           {[
             { id: 'calendar', label: 'Dashboard', icon: LayoutDashboard, color: '#F59E0B' },
             { id: 'reports', label: 'Relatórios', icon: BarChart3, color: '#059669' },
@@ -457,76 +296,79 @@ const App: React.FC = () => {
           ].map((tab) => {
              const isActive = activeTab === tab.id;
              return (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`w-full flex items-center justify-center md:justify-start gap-1.5 md:gap-3 px-1.5 md:px-4 py-2.5 md:py-3.5 rounded-xl md:rounded-2xl text-[9px] md:text-sm font-black uppercase tracking-widest transition-all shadow-md border-2
-                  ${isActive ? `text-white border-transparent shadow-lg scale-[1.02] md:scale-105` : 'bg-white dark:bg-slate-800 text-slate-950 dark:text-slate-400 border-slate-500 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
+              <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2
+                  ${isActive ? 'text-white border-transparent shadow-lg scale-105' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-400 dark:border-slate-700 hover:bg-slate-50'}`}
                 style={isActive ? { backgroundColor: tab.color } : {}}
               >
-                <tab.icon size={14} className="md:size-6" /> <span className="truncate">{tab.label}</span>
+                <tab.icon size={18} /> {tab.label}
               </button>
              );
           })}
         </nav>
 
-        <div className="hidden md:block flex-1 p-8 space-y-10">
+        <div className="hidden md:block p-6 mt-auto">
           <SidebarWidgets />
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 p-4 md:p-10 overflow-x-hidden">
-          <div className="max-w-6xl mx-auto">
-            {activeTab === 'calendar' && (
-              <div className="mb-6 p-5 md:p-10 bg-white dark:bg-slate-900 border-2 border-slate-500 dark:border-slate-800 rounded-3xl md:rounded-[3rem] shadow-2xl">
-                <div className="flex justify-between items-end mb-6">
-                  <div>
-                    <span className="text-[11px] md:text-xs font-black text-slate-800 dark:text-slate-400 uppercase tracking-[0.2em] mb-1 block">Foco & Disciplina</span>
-                    <h2 className="text-2xl md:text-4xl font-black text-slate-950 dark:text-white">Relatório Diário</h2>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xl md:text-3xl font-black text-amber-700 dark:text-athena-coral">
-                      {todayData?.studyMinutes || 0} <span className="text-base text-slate-600 font-bold">/ {state.globalDailyGoal}m</span>
-                    </span>
-                    <p className="text-[10px] font-black uppercase text-slate-700 dark:text-slate-400 mt-1">{Math.round(progressPercent)}% da Meta</p>
-                  </div>
+      {/* Área Principal */}
+      <main className="flex-1 p-4 md:p-10 overflow-x-hidden">
+        <div className="max-w-6xl mx-auto space-y-10">
+          
+          {activeTab === 'calendar' && (
+            <div className="p-6 md:p-10 bg-white dark:bg-slate-900 border-2 border-slate-500 dark:border-slate-800 rounded-[2.5rem] shadow-2xl">
+              <div className="flex justify-between items-end mb-6">
+                <div>
+                  <span className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1 block">Foco & Disciplina</span>
+                  <h2 className="text-2xl md:text-4xl font-black">Estudo Diário</h2>
                 </div>
-                <div className="w-full bg-slate-300 dark:bg-slate-800 h-6 md:h-10 rounded-2xl md:rounded-[2rem] border-2 border-slate-500 dark:border-slate-700 shadow-inner p-1">
-                  <div className="bg-athena-coral h-full rounded-xl md:rounded-[1.5rem] transition-all duration-1000 shadow-lg relative overflow-hidden" style={{ width: `${progressPercent}%` }}>
-                    <div className="absolute inset-0 bg-white/10 animate-pulse"></div>
-                  </div>
+                <div className="text-right">
+                  <span className="text-2xl md:text-4xl font-black text-athena-coral">{todayData?.studyMinutes || 0}m <span className="text-sm text-slate-500">/ {state.globalDailyGoal}m</span></span>
+                  <p className="text-[10px] font-black uppercase text-slate-500 mt-1">{Math.round(progressPercent)}% da Meta</p>
                 </div>
               </div>
-            )}
-
-            {!isInitialized && session && (
-              <div className="flex flex-col items-center justify-center py-20 animate-pulse">
-                <Database size={48} className="text-amber-500 mb-4" />
-                <p className="font-black uppercase tracking-widest text-slate-600 text-center">Conectando ao Parthenon...<br/><span className="text-[10px] opacity-60">Sincronizando seus dados</span></p>
+              <div className="w-full bg-slate-200 dark:bg-slate-800 h-6 rounded-full border-2 border-slate-500 dark:border-slate-700 p-1 shadow-inner">
+                <div className="bg-athena-coral h-full rounded-full transition-all duration-1000 shadow-md" style={{ width: `${progressPercent}%` }} />
               </div>
-            )}
-
-            <div className={`animate-fade-in ${!isInitialized ? 'opacity-0' : 'opacity-100'}`}>
-              {activeTab === 'calendar' && (
-                <Calendar 
-                  data={state.calendar || {}} 
-                  subjects={state.subjects || []}
-                  globalGoal={state.globalDailyGoal || 0}
-                  onUpdateDay={updateCalendarDay}
-                  recurringTasks={state.recurringTasks || []}
-                  recurringCommitments={state.recurringCommitments || []}
-                />
-              )}
-              {activeTab === 'reports' && <Reports calendar={state.calendar || {}} subjects={state.subjects || []} />}
-              {activeTab === 'progress' && <ProgressTracker progressList={state.subjectProgress || []} subjects={state.subjects || []} onUpdate={(l) => setState(p => ({ ...p, subjectProgress: l }))} />}
-              {activeTab === 'insights' && <Insights calendarData={state.calendar} subjectProgress={state.subjectProgress} />}
-              {activeTab === 'groups' && <GroupManager userEmail={String(session.user.email || '')} onNotification={showNotification} />}
             </div>
-          </div>
-        </main>
+          )}
 
-        <div className="md:hidden border-t-2 border-slate-500 dark:border-slate-800 bg-white dark:bg-slate-900 pb-20">
-          <SidebarWidgets />
+          <div className="animate-fade-in">
+            {activeTab === 'calendar' && (
+              <Calendar 
+                data={state.calendar} 
+                subjects={state.subjects}
+                globalGoal={state.globalDailyGoal}
+                onUpdateDay={updateCalendarDay}
+                recurringTasks={state.recurringTasks}
+                recurringCommitments={state.recurringCommitments}
+              />
+            )}
+            {activeTab === 'reports' && <Reports calendar={state.calendar} subjects={state.subjects} />}
+            {activeTab === 'progress' && <ProgressTracker progressList={state.subjectProgress} subjects={state.subjects} onUpdate={(l) => setState(p => ({ ...p, subjectProgress: l }))} />}
+            {activeTab === 'insights' && <Insights calendarData={state.calendar} subjectProgress={state.subjectProgress} />}
+            {activeTab === 'groups' && (
+              <GroupManager 
+                userEmail={session.user.email || ''} 
+                userId={session.user.id} 
+                userName={state.userName}
+                onNotification={showNotification} 
+              />
+            )}
+          </div>
         </div>
+      </main>
+
+      {/* Widgets Mobile */}
+      <div className="md:hidden p-4 border-t border-slate-500 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <SidebarWidgets />
       </div>
+
+      {notification && (
+        <div className="fixed bottom-6 right-6 z-[300] bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl font-black uppercase text-xs tracking-widest flex items-center gap-3 animate-in slide-in-from-bottom-4 duration-300">
+          <CheckCircle size={18} /> {notification.message}
+        </div>
+      )}
     </div>
   );
 };
