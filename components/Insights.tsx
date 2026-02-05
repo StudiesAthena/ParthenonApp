@@ -5,11 +5,7 @@ import {
   AlertCircle, Trophy, Target, Clock, Calendar, CheckCircle2
 } from 'lucide-react';
 import { CalendarData, SubjectProgress, DayData } from '../types';
-import { isAfter } from 'date-fns';
-// Fix: Import date-fns functions directly to resolve export errors and removed unused diffInDays
-import subDays from 'date-fns/subDays';
-import startOfDay from 'date-fns/startOfDay';
-import parseISO from 'date-fns/parseISO';
+import { isAfter, subDays, startOfDay, parseISO } from 'date-fns';
 
 interface InsightsProps {
   calendarData: CalendarData;
@@ -49,7 +45,6 @@ export const Insights: React.FC<InsightsProps> = ({ calendarData, subjectProgres
 
     const results = [];
 
-    // Trend Insight
     if (prevWeekMins > 0) {
       const diff = ((currentWeekMins - prevWeekMins) / prevWeekMins) * 100;
       if (diff > 5) {
@@ -71,7 +66,6 @@ export const Insights: React.FC<InsightsProps> = ({ calendarData, subjectProgres
       }
     }
 
-    // Subject Focus Insight
     const sortedSubjects = Object.entries(subjectCounts).sort((a, b) => b[1] - a[1]);
     if (sortedSubjects.length > 0) {
       const top = sortedSubjects[0];
@@ -86,7 +80,6 @@ export const Insights: React.FC<InsightsProps> = ({ calendarData, subjectProgres
       }
     }
 
-    // Inactivity Alert
     if (lastStudyDate) {
         const gap = Math.floor((today.getTime() - lastStudyDate.getTime()) / (1000 * 60 * 60 * 24));
         if (gap >= 2) {
@@ -108,7 +101,6 @@ export const Insights: React.FC<InsightsProps> = ({ calendarData, subjectProgres
         });
     }
 
-    // Progress Completion
     const completed = subjectProgress.filter(p => p.status === 'Concluída').length;
     if (completed > 0) {
       results.push({
@@ -153,7 +145,6 @@ export const Insights: React.FC<InsightsProps> = ({ calendarData, subjectProgres
         ))}
       </div>
 
-      {/* Estatísticas Rápidas de Resumo */}
       <div className="bg-slate-100 dark:bg-slate-800/40 p-10 rounded-[3rem] border-2 border-slate-400 dark:border-slate-700 shadow-inner grid grid-cols-1 sm:grid-cols-3 gap-8">
         <div className="text-center">
             <div className="mx-auto w-12 h-12 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center mb-4 shadow-md text-athena-teal border border-slate-300">

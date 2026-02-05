@@ -13,12 +13,12 @@ import {
   addWeeks,
   isSameDay,
   isAfter,
-  isBefore
+  isBefore,
+  startOfMonth,
+  startOfWeek,
+  parseISO,
+  startOfDay
 } from 'date-fns';
-import startOfMonth from 'date-fns/startOfMonth';
-import startOfWeek from 'date-fns/startOfWeek';
-import parseISO from 'date-fns/parseISO';
-import startOfDay from 'date-fns/startOfDay';
 import { ptBR } from 'date-fns/locale';
 import { 
   ChevronLeft, ChevronRight, LayoutGrid, List, 

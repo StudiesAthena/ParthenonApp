@@ -9,12 +9,11 @@ import {
   addDays,
   isSameWeek,
   isSameMonth,
-  isSameYear
+  isSameYear,
+  parseISO,
+  startOfDay
 } from 'date-fns';
-// Fix: Import parseISO and startOfDay directly to resolve export errors in the environment
-import parseISO from 'date-fns/parseISO';
-import startOfDay from 'date-fns/startOfDay';
-import { ptBR } from 'date-fns/locale/pt-BR';
+import { ptBR } from 'date-fns/locale';
 import { CalendarData, DayData, Subject } from '../types';
 import { Clock, CalendarDays, Zap, TrendingUp } from 'lucide-react';
 
@@ -40,8 +39,6 @@ export const Reports: React.FC<ReportsProps> = ({ calendar }) => {
       streak: 0,
     };
 
-    // Filtramos e ordenamos as das que possuem estudo para o cálculo da sequência (streak)
-    // Fix: cast Object.entries to explicitly typed array to avoid 'unknown' type error in studyMinutes access
     const studyDates = (Object.entries(calendar) as [string, DayData][])
       .filter(([_, data]) => (data.studyMinutes || 0) > 0)
       .map(([dateStr, data]) => ({
@@ -50,9 +47,7 @@ export const Reports: React.FC<ReportsProps> = ({ calendar }) => {
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime());
 
-    // Cálculo das métricas por período (Semana, Mês, Ano)
     studyDates.forEach(({ date, mins }) => {
-      // Semana começando na Segunda-feira (weekStartsOn: 1)
       if (isSameWeek(date, now, { weekStartsOn: 1 })) {
         metrics.week.total += mins;
         metrics.week.days += 1;
@@ -67,7 +62,6 @@ export const Reports: React.FC<ReportsProps> = ({ calendar }) => {
       }
     });
 
-    // Cálculo da sequência (streak)
     let currentStreak = 0;
     let maxStreak = 0;
     

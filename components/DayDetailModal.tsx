@@ -4,8 +4,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
   X, Trash2, CheckCircle2, Circle, Clock, ChevronUp, ChevronDown, 
-  RefreshCw, RotateCcw, BookOpen, CalendarCheck, Share2, Plus, 
-  Calendar as CalendarIcon, Edit2, Check, ChevronRight, Tag 
+  RefreshCw, RotateCcw, BookOpen, Share2, Plus, 
+  Edit2, Check, Tag 
 } from 'lucide-react';
 import { DayData, Task, Commitment, Subject } from '../types';
 
@@ -31,7 +31,6 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
   recurringCommitments, 
   onSave 
 }) => {
-  // Garantimos que tasks e commitments sejam arrays para evitar erros de spread
   const [localDayData, setLocalDayData] = useState<DayData>({ 
     ...dayData, 
     tasks: Array.isArray(dayData.tasks) ? dayData.tasks : [],
@@ -61,18 +60,8 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
   const [editCommSubject, setEditCommSubject] = useState('');
 
   const [itemToDelete, setItemToDelete] = useState<{ id: string, type: 'task' | 'commitment', isRecurring?: boolean } | null>(null);
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const dailyWeekday = date.getDay();
-
-  const toggleExpand = (id: string) => {
-    setExpandedItems(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   const addTask = () => {
     const text = newTaskText.trim();
@@ -126,6 +115,12 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
     setCommIsRecurring(false);
   };
 
+  const startTaskEdit = (task: Task) => {
+    setEditingTaskId(task.id);
+    setEditTaskText(task.text);
+    setEditTaskSubject(task.subject);
+  };
+
   const saveTaskEdit = (id: string, recurring: boolean) => {
     if (!editTaskText.trim()) return;
     if (recurring) {
@@ -137,6 +132,13 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
       }));
     }
     setEditingTaskId(null);
+  };
+
+  const startCommEdit = (comm: Commitment) => {
+    setEditingCommId(comm.id);
+    setEditCommText(comm.text);
+    setEditCommTime(comm.time);
+    setEditCommSubject(comm.subject || '');
   };
 
   const saveCommEdit = (id: string, recurring: boolean) => {
@@ -236,18 +238,44 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
 
             <div className="space-y-2">
               {activeDayTasks.map(task => (
-                <div key={task.id} className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center gap-3">
-                  <button onClick={() => {
-                    if (task.isRecurring) setLocalRecurringTasks(prev => prev.map(t => t.id === task.id ? {...t, completed: !t.completed} : t));
-                    else setLocalDayData(prev => ({ ...prev, tasks: (prev.tasks || []).map(t => t.id === task.id ? {...t, completed: !t.completed} : t) }));
-                  }} className={task.completed ? 'text-emerald-500' : 'text-slate-300'}>
-                    {task.completed ? <CheckCircle2 size={20}/> : <Circle size={20}/>}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[7px] font-black text-white px-1.5 py-0.5 rounded uppercase" style={{backgroundColor: getSubjectColor(task.subject)}}>{task.subject}</span>
-                    <p className={`text-xs font-bold truncate ${task.completed ? 'line-through text-slate-400' : ''}`}>{task.text}</p>
-                  </div>
-                  <button onClick={() => setItemToDelete({id: task.id, type: 'task', isRecurring: !!task.isRecurring})} className="text-rose-400 p-1"><Trash2 size={14}/></button>
+                <div key={task.id} className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center gap-3 group">
+                  {editingTaskId === task.id ? (
+                    <div className="flex-1 flex gap-2 items-center">
+                      <select 
+                        className="p-1 text-[8px] font-black uppercase rounded bg-slate-100 dark:bg-slate-700 border border-slate-300"
+                        value={editTaskSubject}
+                        onChange={e => setEditTaskSubject(e.target.value)}
+                      >
+                        {subjects.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                      </select>
+                      <input 
+                        type="text" 
+                        className="flex-1 p-1 text-xs font-bold border-b border-athena-teal bg-transparent outline-none"
+                        value={editTaskText}
+                        onChange={e => setEditTaskText(e.target.value)}
+                        autoFocus
+                      />
+                      <button onClick={() => saveTaskEdit(task.id, !!task.isRecurring)} className="p-1 text-emerald-600"><Check size={16}/></button>
+                      <button onClick={() => setEditingTaskId(null)} className="p-1 text-rose-600"><X size={16}/></button>
+                    </div>
+                  ) : (
+                    <>
+                      <button onClick={() => {
+                        if (task.isRecurring) setLocalRecurringTasks(prev => prev.map(t => t.id === task.id ? {...t, completed: !t.completed} : t));
+                        else setLocalDayData(prev => ({ ...prev, tasks: (prev.tasks || []).map(t => t.id === task.id ? {...t, completed: !t.completed} : t) }));
+                      }} className={task.completed ? 'text-emerald-500' : 'text-slate-300'}>
+                        {task.completed ? <CheckCircle2 size={20}/> : <Circle size={20}/>}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[7px] font-black text-white px-1.5 py-0.5 rounded uppercase" style={{backgroundColor: getSubjectColor(task.subject)}}>{task.subject}</span>
+                        <p className={`text-xs font-bold truncate ${task.completed ? 'line-through text-slate-400' : ''}`}>{task.text}</p>
+                      </div>
+                      <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => startTaskEdit(task)} className="text-slate-400 p-1 hover:text-athena-teal"><Edit2 size={14}/></button>
+                        <button onClick={() => setItemToDelete({id: task.id, type: 'task', isRecurring: !!task.isRecurring})} className="text-rose-400 p-1 hover:text-rose-600"><Trash2 size={14}/></button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -266,11 +294,36 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
 
             <div className="space-y-2">
               {activeDayCommitments.map(comm => (
-                <div key={comm.id} className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center gap-3">
-                  <span className="text-[10px] font-black bg-amber-100 text-amber-700 px-2 py-1 rounded">{comm.time}</span>
-                  <p className="flex-1 text-xs font-bold truncate">{comm.text}</p>
-                  <button onClick={() => syncToGoogle(comm.text, comm.time, 'Agendado via Parthenon', false, !!comm.isRecurring, comm.recurrenceDay)} className="text-athena-teal p-1"><Share2 size={14}/></button>
-                  <button onClick={() => setItemToDelete({id: comm.id, type: 'commitment', isRecurring: !!comm.isRecurring})} className="text-rose-400 p-1"><Trash2 size={14}/></button>
+                <div key={comm.id} className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center gap-3 group">
+                  {editingCommId === comm.id ? (
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <input type="time" className="p-1 text-[10px] font-black rounded border border-slate-300" value={editCommTime} onChange={e => setEditCommTime(e.target.value)} />
+                        <select className="p-1 text-[8px] font-black uppercase rounded bg-slate-100 dark:bg-slate-700 border border-slate-300" value={editCommSubject} onChange={e => setEditCommSubject(e.target.value)}>
+                          <option value="">Sem Matéria</option>
+                          {subjects.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
+                        </select>
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <input type="text" className="flex-1 p-1 text-xs font-bold border-b border-athena-coral bg-transparent outline-none" value={editCommText} onChange={e => setEditCommText(e.target.value)} />
+                        <button onClick={() => saveCommEdit(comm.id, !!comm.isRecurring)} className="p-1 text-emerald-600"><Check size={16}/></button>
+                        <button onClick={() => setEditingCommId(null)} className="p-1 text-rose-600"><X size={16}/></button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="text-[10px] font-black bg-amber-100 text-amber-700 px-2 py-1 rounded shrink-0">{comm.time}</span>
+                      <div className="flex-1 min-w-0">
+                        {comm.subject && <span className="text-[7px] font-black text-white px-1.5 py-0.5 rounded uppercase block w-fit mb-0.5" style={{backgroundColor: getSubjectColor(comm.subject)}}>{comm.subject}</span>}
+                        <p className="text-xs font-bold truncate">{comm.text}</p>
+                      </div>
+                      <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => startCommEdit(comm)} className="text-slate-400 p-1 hover:text-athena-teal"><Edit2 size={14}/></button>
+                        <button onClick={() => syncToGoogle(comm.text, comm.time, 'Agendado via Parthenon', false, !!comm.isRecurring, comm.recurrenceDay)} className="text-athena-teal p-1 hover:scale-110"><Share2 size={14}/></button>
+                        <button onClick={() => setItemToDelete({id: comm.id, type: 'commitment', isRecurring: !!comm.isRecurring})} className="text-rose-400 p-1 hover:text-rose-600"><Trash2 size={14}/></button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -280,15 +333,15 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
           <section className="bg-amber-500 p-6 rounded-3xl text-slate-950 flex justify-between items-center shadow-xl">
              <div><span className="text-4xl font-black">{localDayData.studyMinutes || 0}</span><p className="text-[10px] font-black uppercase">Minutos de Estudo</p></div>
              <div className="flex gap-2">
-                <button onClick={() => setLocalDayData(p => ({...p, studyMinutes: Math.max(0, (p.studyMinutes || 0) - 5)}))} className="p-2 bg-black/10 rounded-xl"><ChevronDown/></button>
-                <button onClick={() => setLocalDayData(p => ({...p, studyMinutes: (p.studyMinutes || 0) + 5}))} className="p-2 bg-white rounded-xl"><ChevronUp/></button>
+                <button onClick={() => setLocalDayData(p => ({...p, studyMinutes: Math.max(0, (p.studyMinutes || 0) - 5)}))} className="p-2 bg-black/10 rounded-xl hover:bg-black/20 transition-colors"><ChevronDown/></button>
+                <button onClick={() => setLocalDayData(p => ({...p, studyMinutes: (p.studyMinutes || 0) + 5}))} className="p-2 bg-white rounded-xl hover:bg-slate-100 transition-colors"><ChevronUp/></button>
              </div>
           </section>
         </div>
 
-        <div className="p-4 md:p-6 border-t border-slate-300 dark:border-slate-800 flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 text-[10px] font-black uppercase text-slate-500">Cancelar</button>
-          <button onClick={() => onSave(localDayData, localRecurringTasks, localRecurringCommitments)} className="px-6 py-2 bg-athena-teal text-white rounded-xl text-[10px] font-black uppercase shadow-lg">Salvar Alterações</button>
+        <div className="p-4 md:p-6 border-t border-slate-300 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">
+          <button onClick={onClose} className="px-4 py-2 text-[10px] font-black uppercase text-slate-500 hover:text-slate-800 transition-colors">Cancelar</button>
+          <button onClick={() => onSave(localDayData, localRecurringTasks, localRecurringCommitments)} className="px-6 py-2 bg-athena-teal text-white rounded-xl text-[10px] font-black uppercase shadow-lg hover:bg-athena-teal/90 active:scale-95 transition-all">Salvar Alterações</button>
         </div>
       </div>
     </div>

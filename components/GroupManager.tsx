@@ -6,7 +6,7 @@ import {
   Trash2, Copy, Check, Download, Loader2,
   X, Layers, Save, AlertTriangle, ShieldCheck,
   Edit2, MoreVertical, Search, ShieldAlert, UserMinus, LogOut,
-  FileX
+  FileX, FolderX
 } from 'lucide-react';
 import { Group, GroupFile, GroupActivity, GroupMember } from '../types';
 
@@ -46,6 +46,7 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
   const [confirmLeaveGroup, setConfirmLeaveGroup] = useState(false);
   const [memberToKick, setMemberToKick] = useState<GroupMember | null>(null);
   const [fileToDelete, setFileToDelete] = useState<GroupFile | null>(null);
+  const [activityToDelete, setActivityToDelete] = useState<GroupActivity | null>(null);
   
   const [copied, setCopied] = useState(false);
 
@@ -184,7 +185,6 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
     setRemovingMemberId(targetUserId);
     setActionLoading(true);
     try {
-      // Usando RPC conforme solicitado para garantir que as políticas de dono funcionem corretamente
       const { data, error } = await supabase.rpc(
         'remove_group_member',
         {
@@ -195,32 +195,30 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
 
       if (error) {
         console.error(error);
-        notify("Erro ao remover aluno", "error");
+        alert("Erro ao remover aluno");
         return;
       }
 
       if (!data) {
-        notify("Você não tem permissão para remover este aluno.", "error");
+        alert("Você não tem permissão para remover este aluno.");
         return;
       }
 
-      // Sucesso real - atualizar interface
+      // Sucesso real
+      notify("Aluno removido com sucesso", "success");
+      
       setGroupMembers(prev => prev.filter(m => m.user_id !== targetUserId));
       
       if (targetUserId === userId) {
-        // Caso o próprio usuário esteja saindo (auto-remoção)
         setGroups(prev => prev.filter(g => g.id !== targetGroupId));
         setActiveGroupId(null);
         setConfirmLeaveGroup(false);
-        notify('Você saiu da turma.', 'success');
       } else {
-        // Caso o dono esteja removendo um aluno
-        notify('Estudante removido com sucesso.', 'success');
         setMemberToKick(null);
       }
     } catch (e: any) { 
-      console.error("Erro ao remover:", e);
-      notify('Falha inesperada ao remover membro.', 'error'); 
+      console.error("Erro inesperado:", e);
+      alert("Erro crítico ao tentar remover aluno.");
     } finally { 
       setRemovingMemberId(null); 
       setActionLoading(false);
@@ -246,6 +244,27 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
     finally { setActionLoading(false); }
   };
 
+  const deleteActivity = async () => {
+    if (!activityToDelete) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase.from('group_activities').delete().eq('id', activityToDelete.id);
+      if (error) throw error;
+      
+      setActivities(prev => prev.filter(a => a.id !== activityToDelete.id));
+      if (activeActivityId === activityToDelete.id) {
+        setActiveActivityId(null);
+        setActiveActivity(null);
+      }
+      setActivityToDelete(null);
+      notify('Tópico removido com sucesso!', 'success');
+    } catch (e: any) {
+      notify('Erro ao excluir tópico.', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !activeGroupId || !activeActivityId) return;
@@ -254,30 +273,34 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
     try {
       const groupId = activeGroupId;
       const activityId = activeActivityId;
-      const uuid = crypto.randomUUID();
-      const path = `${groupId}/${uuid}-${file.name}`;
+      
+      // Lógica solicitada: UUID + Extensão para Path Seguro
+      const fileExt = file.name.split('.').pop();
+      const safeFileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${groupId}/${activityId}/${safeFileName}`;
 
-      const { error } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('group_files')
-        .upload(path, file);
+        .upload(filePath, file);
 
-      if (error) throw error;
+      if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage.from('group_files').getPublicUrl(path);
+      const { data: urlData } = supabase.storage.from('group_files').getPublicUrl(filePath);
       
       const { data: authData } = await supabase.auth.getUser();
 
+      // Guardando o nome original no banco para visualização do aluno
       const { data: dbData, error: dbError } = await supabase.from('group_files').insert({
         group_id: groupId, 
         activity_id: activityId, 
-        name: file.name, 
+        name: file.name, // Nome Original
         url: urlData.publicUrl, 
         uploaded_by: authData?.user?.id || userId, 
         size: file.size
       }).select().single();
       
       if (dbError) {
-        await supabase.storage.from('group_files').remove([path]);
+        await supabase.storage.from('group_files').remove([filePath]);
         throw dbError;
       }
       
@@ -296,10 +319,18 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
     if (!fileToDelete) return;
     setActionLoading(true);
     try {
-      const urlParts = fileToDelete.url.split('group_files/');
+      // Extraindo o path do storage a partir da URL pública
+      const urlParts = fileToDelete.url.split('group_files/public/');
       if (urlParts.length > 1) {
         const storagePath = urlParts[1].split('?')[0];
         await supabase.storage.from('group_files').remove([storagePath]);
+      } else {
+        // Fallback para estrutura antiga caso necessário
+        const altParts = fileToDelete.url.split('group_files/');
+        if (altParts.length > 1) {
+           const storagePath = altParts[1].split('?')[0];
+           await supabase.storage.from('group_files').remove([storagePath]);
+        }
       }
 
       const { error, count } = await supabase.from('group_files').delete({ count: 'exact' }).eq('id', fileToDelete.id);
@@ -413,6 +444,21 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
         </div>
       )}
 
+      {/* Modal Excluir Tópico (Dono) */}
+      {activityToDelete && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] p-8 border-2 border-rose-600 shadow-2xl text-center">
+            <FolderX size={48} className="mx-auto text-rose-600 mb-4" />
+            <h3 className="text-2xl font-black uppercase mb-2">Excluir Tópico?</h3>
+            <p className="text-xs text-slate-500 mb-6 font-bold uppercase">Deseja excluir o tópico <b>{activityToDelete.name}</b>? Todos os materiais dentro dele também serão removidos do painel.</p>
+            <div className="flex gap-4 mt-6">
+              <button disabled={actionLoading} onClick={deleteActivity} className="flex-1 py-4 bg-rose-600 text-white rounded-xl font-black uppercase text-xs">Excluir Tópico</button>
+              <button onClick={() => setActivityToDelete(null)} className="flex-1 py-4 bg-slate-100 rounded-xl font-black uppercase text-xs">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Cabeçalho */}
       <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border-2 border-slate-500 dark:border-slate-800 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
@@ -509,10 +555,21 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
                 {/* Tópicos */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                   {activities.map(act => (
-                    <button key={act.id} onClick={() => setActiveActivityId(act.id)} className={`p-6 rounded-2xl border-2 text-left transition-all relative overflow-hidden active:scale-95 ${activeActivityId === act.id ? 'bg-athena-coral border-athena-coral text-white shadow-xl scale-105' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-800 hover:border-athena-coral'}`}>
-                      <p className="text-[11px] font-black uppercase tracking-tight line-clamp-2">{act.name}</p>
-                      <div className={`absolute bottom-0 right-0 p-1 opacity-20 ${activeActivityId === act.id ? 'text-white' : 'text-slate-300'}`}><Plus size={24}/></div>
-                    </button>
+                    <div key={act.id} className="relative group/topic">
+                      <button onClick={() => setActiveActivityId(act.id)} className={`w-full p-6 rounded-2xl border-2 text-left transition-all relative overflow-hidden active:scale-95 h-full ${activeActivityId === act.id ? 'bg-athena-coral border-athena-coral text-white shadow-xl scale-105' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-800 hover:border-athena-coral'}`}>
+                        <p className="text-[11px] font-black uppercase tracking-tight line-clamp-2 pr-4">{act.name}</p>
+                        <div className={`absolute bottom-0 right-0 p-1 opacity-20 ${activeActivityId === act.id ? 'text-white' : 'text-slate-300'}`}><Plus size={24}/></div>
+                      </button>
+                      {isGroupOwner && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setActivityToDelete(act); }} 
+                          className="absolute top-2 right-2 bg-white/80 dark:bg-slate-800/80 text-rose-500 p-2 rounded-full shadow-md opacity-0 group-hover/topic:opacity-100 transition-all hover:scale-110 active:scale-90 z-20 border border-slate-200 dark:border-slate-700 backdrop-blur-sm"
+                          title="Excluir Tópico"
+                        >
+                          <Trash2 size={14}/>
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
 
