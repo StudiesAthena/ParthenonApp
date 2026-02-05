@@ -220,10 +220,10 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
             <h4 className="text-[10px] font-black uppercase text-athena-teal tracking-widest flex items-center gap-2"><BookOpen size={14}/> Planejamento de Estudos</h4>
             <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 space-y-3">
               <div className="flex gap-2">
-                <select className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-300 text-[10px] font-black" value={selectedSubject} onChange={e => setSelectedSubject(e.target.value)}>
+                <select className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-300 text-[10px] font-black text-slate-950 dark:text-white" value={selectedSubject} onChange={e => setSelectedSubject(e.target.value)}>
                   {subjects.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
                 </select>
-                <input type="text" className="flex-1 p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-300 text-xs font-bold" placeholder="Assunto do estudo..." value={newTaskText} onChange={e => setNewTaskText(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} />
+                <input type="text" className="flex-1 p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-300 text-xs font-bold text-slate-950 dark:text-white" placeholder="Assunto do estudo..." value={newTaskText} onChange={e => setNewTaskText(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTask()} />
                 <button onClick={addTask} className="p-2 bg-athena-teal text-white rounded-lg"><Plus size={20}/></button>
               </div>
               <div className="flex items-center gap-4">
@@ -242,7 +242,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                   {editingTaskId === task.id ? (
                     <div className="flex-1 flex gap-2 items-center">
                       <select 
-                        className="p-1 text-[8px] font-black uppercase rounded bg-slate-100 dark:bg-slate-700 border border-slate-300"
+                        className="p-1 text-[8px] font-black uppercase rounded bg-white dark:bg-slate-700 border border-slate-300 text-slate-950 dark:text-white"
                         value={editTaskSubject}
                         onChange={e => setEditTaskSubject(e.target.value)}
                       >
@@ -250,7 +250,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                       </select>
                       <input 
                         type="text" 
-                        className="flex-1 p-1 text-xs font-bold border-b border-athena-teal bg-transparent outline-none"
+                        className="flex-1 p-1 text-xs font-bold border-b border-athena-teal bg-white dark:bg-slate-800 text-slate-950 dark:text-white outline-none"
                         value={editTaskText}
                         onChange={e => setEditTaskText(e.target.value)}
                         autoFocus
@@ -286,8 +286,8 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
             <h4 className="text-[10px] font-black uppercase text-athena-coral tracking-widest flex items-center gap-2"><Clock size={14}/> Compromissos</h4>
             <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border-2 border-amber-200 dark:border-amber-800 space-y-3">
               <div className="flex gap-2">
-                <input type="time" className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-amber-200 text-xs font-black" value={newCommitmentTime} onChange={e => setNewCommitmentTime(e.target.value)} />
-                <input type="text" className="flex-1 p-2 bg-white dark:bg-slate-900 rounded-lg border border-amber-200 text-xs font-bold" placeholder="Descrição..." value={newCommitmentText} onChange={e => setNewCommitmentText(e.target.value)} onKeyDown={e => e.key === 'Enter' && addCommitment()} />
+                <input type="time" className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-amber-200 text-xs font-black text-slate-950 dark:text-white" value={newCommitmentTime} onChange={e => setNewCommitmentTime(e.target.value)} />
+                <input type="text" className="flex-1 p-2 bg-white dark:bg-slate-900 rounded-lg border border-amber-200 text-xs font-bold text-slate-950 dark:text-white" placeholder="Descrição..." value={newCommitmentText} onChange={e => setNewCommitmentText(e.target.value)} onKeyDown={e => e.key === 'Enter' && addCommitment()} />
                 <button onClick={addCommitment} className="p-2 bg-athena-coral text-white rounded-lg"><Plus size={20}/></button>
               </div>
             </div>
@@ -298,16 +298,30 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                   {editingCommId === comm.id ? (
                     <div className="flex-1 flex flex-col gap-2">
                       <div className="flex gap-2">
-                        <input type="time" className="p-1 text-[10px] font-black rounded border border-slate-300" value={editCommTime} onChange={e => setEditCommTime(e.target.value)} />
-                        <select className="p-1 text-[8px] font-black uppercase rounded bg-slate-100 dark:bg-slate-700 border border-slate-300" value={editCommSubject} onChange={e => setEditCommSubject(e.target.value)}>
+                        <input 
+                          type="time" 
+                          className="p-1.5 text-[10px] font-black rounded border border-slate-300 bg-white dark:bg-slate-700 text-slate-950 dark:text-white focus:border-athena-coral outline-none" 
+                          value={editCommTime} 
+                          onChange={e => setEditCommTime(e.target.value)} 
+                        />
+                        <select 
+                          className="p-1.5 text-[8px] font-black uppercase rounded bg-white dark:bg-slate-700 border border-slate-300 text-slate-950 dark:text-white focus:border-athena-coral outline-none" 
+                          value={editCommSubject} 
+                          onChange={e => setEditCommSubject(e.target.value)}
+                        >
                           <option value="">Sem Matéria</option>
                           {subjects.map(s => <option key={s.name} value={s.name}>{s.name}</option>)}
                         </select>
                       </div>
                       <div className="flex gap-2 items-center">
-                        <input type="text" className="flex-1 p-1 text-xs font-bold border-b border-athena-coral bg-transparent outline-none" value={editCommText} onChange={e => setEditCommText(e.target.value)} />
-                        <button onClick={() => saveCommEdit(comm.id, !!comm.isRecurring)} className="p-1 text-emerald-600"><Check size={16}/></button>
-                        <button onClick={() => setEditingCommId(null)} className="p-1 text-rose-600"><X size={16}/></button>
+                        <input 
+                          type="text" 
+                          className="flex-1 p-1.5 text-xs font-bold border-b-2 border-athena-coral bg-white dark:bg-slate-700 text-slate-950 dark:text-white outline-none" 
+                          value={editCommText} 
+                          onChange={e => setEditCommText(e.target.value)} 
+                        />
+                        <button onClick={() => saveCommEdit(comm.id, !!comm.isRecurring)} className="p-1 text-emerald-600"><Check size={18}/></button>
+                        <button onClick={() => setEditingCommId(null)} className="p-1 text-rose-600"><X size={18}/></button>
                       </div>
                     </div>
                   ) : (
@@ -315,7 +329,7 @@ export const DayDetailModal: React.FC<DayDetailModalProps> = ({
                       <span className="text-[10px] font-black bg-amber-100 text-amber-700 px-2 py-1 rounded shrink-0">{comm.time}</span>
                       <div className="flex-1 min-w-0">
                         {comm.subject && <span className="text-[7px] font-black text-white px-1.5 py-0.5 rounded uppercase block w-fit mb-0.5" style={{backgroundColor: getSubjectColor(comm.subject)}}>{comm.subject}</span>}
-                        <p className="text-xs font-bold truncate">{comm.text}</p>
+                        <p className="text-xs font-bold truncate text-slate-950 dark:text-white">{comm.text}</p>
                       </div>
                       <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => startCommEdit(comm)} className="text-slate-400 p-1 hover:text-athena-teal"><Edit2 size={14}/></button>
