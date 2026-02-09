@@ -1,14 +1,14 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ChevronDown, Bird, Sun, Moon, Search, HelpCircle, Sparkles } from 'lucide-react';
 
 interface FAQPageProps {
-  onBack: () => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
 }
 
-export const FAQPage: React.FC<FAQPageProps> = ({ onBack, theme, toggleTheme }) => {
+export const FAQPage: React.FC<FAQPageProps> = ({ theme, toggleTheme }) => {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -37,40 +37,40 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onBack, theme, toggleTheme }) 
     { q: "O aplicativo é indicado para quem tem dificuldade em matemática?", a: "Sim. O Parthenon foi pensado especialmente para apoiar estudantes que querem organizar melhor seus estudos, com destaque para matemática." }
   ];
 
-  const filteredFaqs = faqs.filter(faq => 
-    faq.q.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredFaqs = faqs.filter(faq =>
+    faq.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
     faq.a.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-athena-teal selection:text-white transition-colors duration-300">
-      
+
       {/* Header */}
       <header className="fixed top-0 w-full z-[100] backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <button onClick={onBack} className="flex items-center gap-3 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <div className="p-2 bg-athena-teal rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
               <Bird size={24} />
             </div>
             <h1 className="text-xl font-black tracking-tighter text-athena-teal dark:text-white uppercase">
               Parthenon<span className="text-athena-teal">.</span>
             </h1>
-          </button>
+          </Link>
 
           <div className="flex items-center gap-4">
             <button onClick={toggleTheme} className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shadow-sm">
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
-            <button onClick={onBack} className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2">
+            <Link to="/" className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2">
               <ArrowLeft size={14} /> Voltar
-            </button>
+            </Link>
           </div>
         </div>
       </header>
 
       <main className="pt-32 pb-20 px-6">
         <div className="max-w-4xl mx-auto">
-          
+
           <div className="text-center space-y-4 mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-athena-teal/10 text-athena-teal rounded-full border border-athena-teal/20 mb-2">
               <HelpCircle size={14} />
@@ -87,9 +87,9 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onBack, theme, toggleTheme }) 
           {/* Search Bar */}
           <div className="relative max-w-2xl mx-auto mb-16">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Busque por uma dúvida específica..." 
+            <input
+              type="text"
+              placeholder="Busque por uma dúvida específica..."
               className="w-full pl-16 pr-8 py-5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2rem] outline-none focus:border-athena-teal transition-all text-sm font-bold text-slate-950 dark:text-white shadow-xl"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -101,7 +101,7 @@ export const FAQPage: React.FC<FAQPageProps> = ({ onBack, theme, toggleTheme }) 
             {filteredFaqs.length > 0 ? (
               filteredFaqs.map((faq, i) => (
                 <div key={i} className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-800 rounded-[2rem] overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md hover:border-athena-teal">
-                  <button 
+                  <button
                     onClick={() => setActiveFaq(activeFaq === i ? null : i)}
                     className="w-full p-6 md:p-8 flex items-center justify-between text-left"
                   >

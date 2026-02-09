@@ -1,22 +1,22 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, Mail, Bird, Sun, Moon } from 'lucide-react';
 
 interface PrivacyPolicyProps {
-  onBack: () => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
 }
 
-export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack, theme, toggleTheme }) => {
+export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ theme, toggleTheme }) => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-athena-coral selection:text-white transition-colors duration-300">
-      
+
       {/* Header Minimalista */}
       <header className="fixed top-0 w-full z-[100] backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <button 
-            onClick={onBack}
+          <Link
+            to="/"
             className="flex items-center gap-3 group"
           >
             <div className="p-2 bg-athena-coral rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
@@ -25,28 +25,28 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack, theme, tog
             <h1 className="text-xl font-black tracking-tighter text-athena-teal dark:text-white uppercase">
               Parthenon<span className="text-athena-coral">.</span>
             </h1>
-          </button>
+          </Link>
 
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={toggleTheme}
               className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shadow-sm hover:scale-110 active:scale-95 transition-all"
             >
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
-            <button 
-              onClick={onBack}
+            <Link
+              to="/"
               className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2"
             >
               <ArrowLeft size={14} /> Voltar
-            </button>
+            </Link>
           </div>
         </div>
       </header>
 
       <main className="pt-32 pb-20 px-6">
         <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 rounded-[2.5rem] border-2 border-slate-200 dark:border-slate-800 p-8 md:p-16 shadow-2xl">
-          
+
           <div className="flex items-center gap-4 mb-10 text-athena-teal">
             <ShieldCheck size={48} />
             <div>
@@ -210,7 +210,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ onBack, theme, tog
             </section>
 
             <div className="h-px bg-slate-100 dark:bg-slate-800 w-full" />
-            
+
             <p className="text-center text-[10px] font-black uppercase text-slate-400 tracking-[0.3em]">Última atualização: Janeiro de 2026</p>
           </div>
         </div>

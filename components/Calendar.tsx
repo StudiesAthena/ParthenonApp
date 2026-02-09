@@ -99,11 +99,26 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
             {viewMode === 'month' ? format(currentDate, 'MMMM yyyy', { locale: ptBR }) : viewMode === 'week' ? `Semana de ${format(startOfWeek(currentDate, { locale: ptBR }), 'd MMM', { locale: ptBR })}` : 'Minha Agenda'}
           </h3>
         </div>
-        <div className="flex bg-slate-200 dark:bg-slate-800 p-1.5 rounded-2xl w-full sm:w-auto border-2 border-slate-500 dark:border-slate-700 shadow-inner">
-          {[{ id: 'month', icon: LayoutGrid, label: 'Mês' }, { id: 'week', icon: CalIcon, label: 'Semana' }, { id: 'agenda', icon: List, label: 'Agenda' }].map((mode) => (
-            <button key={mode.id} onClick={() => { setViewMode(mode.id as any); if (mode.id === 'agenda') setCurrentDate(new Date()); }} className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase transition-all ${viewMode === mode.id ? 'bg-white dark:bg-slate-700 text-amber-700 shadow-md border border-slate-500 dark:border-slate-600 scale-[1.02]' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}><mode.icon size={14} className="md:size-4" /> {mode.label}</button>
-          ))}
-        </div>
+        <div className="flex flex-wrap min-w-0 bg-slate-200 dark:bg-slate-800 p-1.5 rounded-2xl w-full sm:w-auto border-2 border-slate-500 dark:border-slate-700 shadow-inner">
+  {[{ id: 'month', icon: LayoutGrid, label: 'Mês' }, { id: 'week', icon: CalIcon, label: 'Semana' }, { id: 'agenda', icon: List, label: 'Agenda' }].map((mode) => (
+    <button
+      key={mode.id}
+      onClick={() => {
+        setViewMode(mode.id as any);
+        if (mode.id === 'agenda') setCurrentDate(new Date());
+      }}
+      className={`flex-1 min-w-0 sm:flex-none flex items-center justify-center gap-2 px-2 sm:px-3 md:px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase transition-all ${
+        viewMode === mode.id
+          ? 'bg-white dark:bg-slate-700 text-amber-700 shadow-md border border-slate-500 dark:border-slate-600 scale-[1.02]'
+          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+      }`}
+    >
+      <mode.icon size={14} className="md:size-4" />
+      <span className="truncate">{mode.label}</span>
+    </button>
+  ))}
+</div>
+
       </div>
     );
   };
@@ -160,7 +175,8 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
   const renderWeekView = () => {
     const days = eachDayOfInterval({ start: startOfWeek(currentDate, { locale: ptBR }), end: endOfWeek(currentDate, { locale: ptBR }) });
     return (
-      <div className="w-full animate-fade-in grid grid-cols-1 md:grid-cols-7 gap-4">
+      <div className="w-full animate-fade-in overflow-x-auto pb-2">
+  <div className="flex gap-3 px-1">
         {days.map((day) => {
           const dateKey = format(day, 'yyyy-MM-dd');
           const dayData = data[dateKey];
@@ -170,9 +186,16 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
           const hasRecurringComm = (recurringCommitments || []).some(c => c.recurrenceDay === weekday);
 
           return (
-            <div key={dateKey} onClick={() => setSelectedDate(day)} className={`p-5 rounded-[2rem] border-2 bg-white dark:bg-slate-900 shadow-xl cursor-pointer transition-all hover:scale-105 relative ${isToday(day) ? 'border-amber-500 ring-4 ring-amber-500/10' : 'border-slate-500 dark:border-slate-800'}`}>
+            <div
+  key={dateKey}
+  onClick={() => setSelectedDate(day)}
+  className={`flex-shrink-0 w-[120px] sm:w-[140px] p-3 sm:p-4 rounded-2xl border-2 bg-white dark:bg-slate-900 shadow-xl cursor-pointer transition-all hover:scale-105 relative ${
+    isToday(day)
+      ? 'border-amber-500 ring-4 ring-amber-500/10'
+      : 'border-slate-500 dark:border-slate-800'
+  }`}>
               <div className="text-center mb-4"><p className="text-[10px] font-black uppercase text-slate-600 dark:text-slate-400 tracking-widest">{format(day, 'EEE', { locale: ptBR })}</p><p className={`text-3xl font-black ${isToday(day) ? 'text-amber-600' : 'text-slate-950 dark:text-white'}`}>{format(day, 'd')}</p></div>
-              <div className="space-y-3 min-h-[100px]">
+              <div className="space-y-3 min-h-[60px] sm:min-h-[80px] md:min-h-[100px]">
                 {((Array.isArray(dayData?.commitments) && dayData.commitments.length > 0) || hasRecurringComm) && (
                   <div className="p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-900/50 rounded-xl flex items-center gap-2">
                     <MessageSquare size={12} className="text-amber-600 shrink-0" />
@@ -190,6 +213,7 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
             </div>
           );
         })}
+      </div>
       </div>
     );
   };

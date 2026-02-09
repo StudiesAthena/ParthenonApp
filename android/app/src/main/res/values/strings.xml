@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Parthenon Planner</string>
+    <string name="title_activity_main">Parthenon Planner</string>
+    <string name="package_name">com.parthenon.planner</string>
+    <string name="custom_url_scheme">com.parthenon.planner</string>
+</resources>

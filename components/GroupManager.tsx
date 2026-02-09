@@ -460,14 +460,15 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
       )}
 
       {/* Cabeçalho */}
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border-2 border-slate-500 dark:border-slate-800 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border-2 border-slate-500 dark:border-slate-800 shadow-xl flex flex-col lg:flex-row justify-between items-center gap-6">
+        <div className="w-full lg:w-auto">
+
           <h2 className="text-3xl font-black flex items-center gap-3"><Users size={32} className="text-athena-teal"/> Central de Turmas</h2>
           <p className="text-[10px] font-black uppercase text-slate-500 mt-1">Colaboração e Gestão Acadêmica</p>
         </div>
-        <div className="flex gap-3 w-full md:w-auto">
-          <button onClick={() => { setJoinMode(true); setCreateMode(false); }} className="flex-1 md:flex-none px-6 py-4 bg-white dark:bg-slate-800 border-2 border-athena-teal text-athena-teal rounded-xl font-black uppercase text-[10px] active:scale-95 transition-all">Matricular-se</button>
-          <button onClick={() => { setCreateMode(true); setJoinMode(false); }} className="flex-1 md:flex-none px-6 py-4 bg-athena-teal text-white rounded-xl font-black uppercase text-[10px] shadow-lg active:scale-95 transition-all">Criar Turma</button>
+        <div className="flex gap-3 w-full lg:w-auto min-w-0">
+          <button onClick={() => { setJoinMode(true); setCreateMode(false); }} className="flex-1 min-w-0 lg:flex-none px-3 sm:px-4 md:px-6 py-3 md:py-4 bg-white dark:bg-slate-800 border-2 border-athena-teal text-athena-teal rounded-xl font-black uppercase text-[10px] active:scale-95 transition-all">Matricular-se</button>
+          <button onClick={() => { setCreateMode(true); setJoinMode(false); }} className="flex-1 min-w-0 lg:flex-none px-3 sm:px-4 md:px-6 py-3 md:py-4 bg-athena-teal text-white rounded-xl font-black uppercase text-[10px] shadow-lg active:scale-95 transition-all">Criar Turma</button>
         </div>
       </div>
 
@@ -597,7 +598,7 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
 
                   {isGroupOwner && (
                     <div className="mt-10 p-2 bg-slate-100 dark:bg-slate-800/50 rounded-2xl border-2 border-slate-200 dark:border-slate-700 flex gap-4">
-                      <input type="text" className="flex-1 bg-transparent p-4 text-xs font-bold outline-none placeholder:text-slate-400" placeholder="Título do novo tópico..." value={newActivityName} onChange={e => setNewActivityName(e.target.value)} onKeyDown={e => e.key === 'Enter' && createActivity()} />
+                      <input type="text" className="flex-1 min-w-0 bg-transparent p-4 text-xs font-bold outline-none placeholder:text-slate-400" placeholder="Título do novo tópico..." value={newActivityName} onChange={e => setNewActivityName(e.target.value)} onKeyDown={e => e.key === 'Enter' && createActivity()} />
                       <button disabled={actionLoading} onClick={createActivity} className="px-8 py-4 bg-athena-coral text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg flex items-center gap-3 active:scale-95 transition-all disabled:opacity-50">
                         {actionLoading ? <Loader2 className="animate-spin" size={16}/> : <Plus size={18}/>}
                       </button>

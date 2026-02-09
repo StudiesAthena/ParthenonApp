@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { 
-  Bird, LayoutDashboard, Target, Users, Sparkles, 
-  BarChart3, CheckCircle2, ArrowRight, BookOpen, 
+import { Link } from 'react-router-dom';
+import {
+  Bird, LayoutDashboard, Target, Users, Sparkles,
+  BarChart3, CheckCircle2, ArrowRight, BookOpen,
   ShieldCheck, Smartphone, Zap, Database, Clock,
   ChevronDown, HelpCircle, Star, CreditCard,
   Award, Crown, Sun, Moon, X, CalendarCheck, Tag, Lock, GraduationCap
@@ -10,20 +11,14 @@ import {
 
 interface LandingPageProps {
   onLoginClick: () => void;
-  onPrivacyClick: () => void;
-  onTermsClick: () => void;
-  onFAQClick: () => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ 
-  onLoginClick, 
-  onPrivacyClick, 
-  onTermsClick,
-  onFAQClick,
-  theme, 
-  toggleTheme 
+export const LandingPage: React.FC<LandingPageProps> = ({
+  onLoginClick,
+  theme,
+  toggleTheme
 }) => {
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement | HTMLButtonElement>, id: string) => {
     e.preventDefault();
@@ -109,64 +104,64 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   ];
 
   const featureItems = [
-    { 
-      icon: LayoutDashboard, 
-      title: "Agenda Estratégica", 
+    {
+      icon: LayoutDashboard,
+      title: "Agenda Estratégica",
       desc: "Organize matérias, tempo dedicado e compromissos em um calendário interativo e funcional.",
-      iconColor: "text-emerald-700 dark:text-emerald-400", 
-      iconBg: "bg-emerald-100 dark:bg-emerald-900/40", 
-      hoverBg: "group-hover:bg-emerald-600" 
+      iconColor: "text-emerald-700 dark:text-emerald-400",
+      iconBg: "bg-emerald-100 dark:bg-emerald-900/40",
+      hoverBg: "group-hover:bg-emerald-600"
     },
-    { 
-      icon: BarChart3, 
-      title: "Relatórios de Performance", 
+    {
+      icon: BarChart3,
+      title: "Relatórios de Performance",
       desc: "Acompanhe sua sequência de estudos, tempo total e evolução semanal com gráficos precisos.",
-      iconColor: "text-athena-coral", 
-      iconBg: "bg-athena-coral/20", 
-      hoverBg: "group-hover:bg-athena-coral" 
+      iconColor: "text-athena-coral",
+      iconBg: "bg-athena-coral/20",
+      hoverBg: "group-hover:bg-athena-coral"
     },
-    { 
-      icon: Sparkles, 
-      title: "Insights Inteligentes", 
+    {
+      icon: Sparkles,
+      title: "Insights Inteligentes",
       desc: "Receba notificações sobre seu ritmo de estudo e alertas de foco para nunca perder a constância.",
-      iconColor: "text-athena-teal", 
-      iconBg: "bg-athena-teal/20", 
-      hoverBg: "group-hover:bg-athena-teal" 
+      iconColor: "text-athena-teal",
+      iconBg: "bg-athena-teal/20",
+      hoverBg: "group-hover:bg-athena-teal"
     },
-    { 
-      icon: Users, 
-      title: "Turmas Colaborativas", 
+    {
+      icon: Users,
+      title: "Turmas Colaborativas",
       desc: "Integre-se com professores e grupos para receber materiais, slides e tarefas diretamente no seu painel.",
-      iconColor: "text-athena-gold", 
-      iconBg: "bg-athena-gold/20", 
-      hoverBg: "group-hover:bg-athena-gold" 
+      iconColor: "text-athena-gold",
+      iconBg: "bg-athena-gold/20",
+      hoverBg: "group-hover:bg-athena-gold"
     },
-    { 
-      icon: Smartphone, 
-      title: "Mobilidade Sem Limites", 
+    {
+      icon: Smartphone,
+      title: "Mobilidade Sem Limites",
       desc: "Acesse sua jornada em qualquer dispositivo com sincronização total e integração direta com o Google Calendar para compromissos e sessões de estudo.",
-      iconColor: "text-purple-700 dark:text-purple-400", 
-      iconBg: "bg-purple-100 dark:bg-purple-900/40", 
-      hoverBg: "group-hover:bg-purple-600" 
+      iconColor: "text-purple-700 dark:text-purple-400",
+      iconBg: "bg-purple-100 dark:bg-purple-900/40",
+      hoverBg: "group-hover:bg-purple-600"
     },
-    { 
-      icon: Award, 
-      title: "Conexão Athena", 
+    {
+      icon: Award,
+      title: "Conexão Athena",
       desc: "Compatibilidade total com os serviços da Athena Studies. Integre seus Study Planners Personalizados, mentorias e listas de exercícios para um suporte pedagógico de elite.",
-      iconColor: "text-blue-700 dark:text-blue-400", 
-      iconBg: "bg-blue-100 dark:bg-blue-900/40", 
-      hoverBg: "group-hover:bg-blue-700" 
+      iconColor: "text-blue-700 dark:text-blue-400",
+      iconBg: "bg-blue-100 dark:bg-blue-900/40",
+      hoverBg: "group-hover:bg-blue-700"
     }
   ];
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 font-sans selection:bg-athena-coral selection:text-white scroll-smooth transition-colors duration-300">
-      
+
       {/* Navigation Header */}
       <header className="fixed top-0 w-full z-[100] backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-b border-slate-300 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="h-16 md:h-20 flex items-center justify-between">
-            <button 
+            <button
               onClick={(e) => scrollToSection(e as any, 'top')}
               className="flex items-center gap-2 group"
             >
@@ -177,22 +172,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 Parthenon<span className="text-athena-coral">.</span>
               </h1>
             </button>
-            
+
             <nav className="hidden lg:flex items-center gap-10">
               <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="text-sm font-black uppercase text-slate-800 dark:text-slate-200 hover:text-athena-coral tracking-widest transition-colors">Funcionalidades</a>
               <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="text-sm font-black uppercase text-slate-800 dark:text-slate-200 hover:text-athena-coral tracking-widest transition-colors">Planos</a>
-              <button onClick={onFAQClick} className="text-sm font-black uppercase text-slate-800 dark:text-slate-200 hover:text-athena-coral tracking-widest transition-colors">PERGUNTAS FREQUENTES</button>
+              <Link to="/faq" className="text-sm font-black uppercase text-slate-800 dark:text-slate-200 hover:text-athena-coral tracking-widest transition-colors">PERGUNTAS FREQUENTES</Link>
             </nav>
 
             <div className="flex items-center gap-2 md:gap-4">
-              <button 
+              <button
                 onClick={toggleTheme}
                 className="p-2 md:p-2.5 rounded-lg md:rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700 shadow-sm hover:scale-110 active:scale-95 transition-all"
                 title="Trocar Tema"
               >
                 {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
               </button>
-              <button 
+              <button
                 onClick={onLoginClick}
                 className="px-4 md:px-8 py-2 md:py-3 bg-athena-teal text-white rounded-lg md:rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-athena-teal/90 active:scale-95 transition-all flex items-center gap-2 border-b-4 border-slate-900/20"
               >
@@ -204,7 +199,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <nav className="lg:hidden flex items-center justify-center gap-6 py-2 border-t border-slate-100 dark:border-slate-800 overflow-x-auto no-scrollbar">
             <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="whitespace-nowrap text-[10px] font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">Funcionalidades</a>
             <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="whitespace-nowrap text-[10px] font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">Planos</a>
-            <button onClick={onFAQClick} className="whitespace-nowrap text-[10px] font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">FAQ</button>
+            <Link to="/faq" className="whitespace-nowrap text-[10px] font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider">FAQ</Link>
           </nav>
         </div>
       </header>
@@ -216,24 +211,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <Sparkles size={14} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Roadmap para a Aprovação • 2026</span>
           </div>
-          
+
           <h2 className="text-4xl md:text-7xl font-black leading-[1.1] tracking-tighter text-slate-950 dark:text-white">
             <span className="text-athena-coral">Mais que organização.</span> <span className="text-athena-teal">Um ecossistema de estudos.</span>
           </h2>
-          
+
           <p className="text-lg md:text-xl font-bold text-slate-700 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed">
             O Parthenon Planner é o ecossistema definitivo para organizar sua jornada de estudos e alcançar sua melhor performance em busca dos seus objetivos.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-10">
-            <button 
+            <button
               onClick={onLoginClick}
               className="w-full sm:w-auto px-12 py-5 bg-amber-500 text-slate-950 rounded-2xl font-black uppercase tracking-widest shadow-2xl hover:bg-amber-400 active:scale-95 transition-all flex items-center justify-center gap-3 text-sm border-b-4 border-amber-600"
             >
               COMEÇAR AGORA <Zap size={20} />
             </button>
-            <a 
-              href="#features" 
+            <a
+              href="#features"
               onClick={(e) => scrollToSection(e, 'features')}
               className="w-full sm:w-auto px-12 py-5 bg-white dark:bg-slate-900 text-slate-950 dark:text-white rounded-2xl font-black uppercase tracking-widest shadow-xl border-2 border-slate-400 dark:border-slate-800 hover:bg-slate-50 transition-all text-sm"
             >
@@ -248,7 +243,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-20">
             <h3 className="text-[11px] font-black text-athena-teal uppercase tracking-[0.4em]">Arquitetura de Sucesso</h3>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-950 dark:text-white tracking-tighter">Tudo o que você precisa em <br/>um só ecossistema.</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-950 dark:text-white tracking-tighter">Tudo o que você precisa em <br />um só ecossistema.</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -268,9 +263,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Section: Collaboration & Groups */}
       <section className="py-24 px-6 bg-slate-950 text-white overflow-hidden relative rounded-[3rem] mx-4 md:mx-10 mb-20 shadow-2xl border border-slate-800">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-           <Users size={800} className="absolute -right-40 -top-40 text-athena-teal" />
+          <Users size={800} className="absolute -right-40 -top-40 text-athena-teal" />
         </div>
-        
+
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center relative z-10 p-4 md:p-10">
           <div className="space-y-8">
             <h3 className="text-amber-500 text-[11px] font-black uppercase tracking-[0.4em]">Estudo em Rede</h3>
@@ -280,26 +275,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4 md:gap-6">
-             <div className="space-y-4 md:space-y-6 mt-12">
-                <div className="p-4 md:p-8 bg-slate-900 border-2 border-slate-800 rounded-3xl space-y-2 md:space-y-4 shadow-xl flex flex-col justify-center min-h-[140px]">
-                  <BookOpen className="text-athena-coral shrink-0" size={28} />
-                  <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-300 break-words leading-tight">Conteúdos</p>
-                </div>
-                <div className="p-4 md:p-8 bg-athena-teal border-2 border-athena-teal/50 rounded-3xl space-y-2 md:space-y-4 shadow-2xl flex flex-col justify-center min-h-[140px]">
-                  <Database className="text-white shrink-0" size={28} />
-                  <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/90 break-words leading-tight">Arquivos</p>
-                </div>
-             </div>
-             <div className="space-y-4 md:space-y-6">
-                <div className="p-4 md:p-8 bg-amber-500 text-slate-950 rounded-3xl space-y-2 md:space-y-4 shadow-2xl border-2 border-amber-600 flex flex-col justify-center min-h-[140px]">
-                  <Zap className="shrink-0" size={28} />
-                  <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-950/70 break-words leading-tight">Agilidade</p>
-                </div>
-                <div className="p-4 md:p-8 bg-slate-900 border-2 border-slate-800 rounded-3xl space-y-2 md:space-y-4 shadow-xl flex flex-col justify-center min-h-[140px]">
-                  <Clock className="text-emerald-500 shrink-0" size={28} />
-                  <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-300 break-words leading-tight">Constância</p>
-                </div>
-             </div>
+            <div className="space-y-4 md:space-y-6 mt-12">
+              <div className="p-4 md:p-8 bg-slate-900 border-2 border-slate-800 rounded-3xl space-y-2 md:space-y-4 shadow-xl flex flex-col justify-center min-h-[140px]">
+                <BookOpen className="text-athena-coral shrink-0" size={28} />
+                <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-300 break-words leading-tight">Conteúdos</p>
+              </div>
+              <div className="p-4 md:p-8 bg-athena-teal border-2 border-athena-teal/50 rounded-3xl space-y-2 md:space-y-4 shadow-2xl flex flex-col justify-center min-h-[140px]">
+                <Database className="text-white shrink-0" size={28} />
+                <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-white/90 break-words leading-tight">Arquivos</p>
+              </div>
+            </div>
+            <div className="space-y-4 md:space-y-6">
+              <div className="p-4 md:p-8 bg-amber-500 text-slate-950 rounded-3xl space-y-2 md:space-y-4 shadow-2xl border-2 border-amber-600 flex flex-col justify-center min-h-[140px]">
+                <Zap className="shrink-0" size={28} />
+                <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-950/70 break-words leading-tight">Agilidade</p>
+              </div>
+              <div className="p-4 md:p-8 bg-slate-900 border-2 border-slate-800 rounded-3xl space-y-2 md:space-y-4 shadow-xl flex flex-col justify-center min-h-[140px]">
+                <Clock className="text-emerald-500 shrink-0" size={28} />
+                <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-300 break-words leading-tight">Constância</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -311,11 +306,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="relative group">
               <div className="absolute -inset-6 bg-athena-teal/10 rounded-[4rem] blur-3xl group-hover:bg-athena-teal/20 transition-all duration-500"></div>
               <div className="relative p-0 bg-transparent rounded-[3rem] shadow-[0_32px_64px_-15px_rgba(0,0,0,0.2)] overflow-hidden flex items-center justify-center aspect-square max-w-[320px]">
-                 <img 
-                    src="https://i.imgur.com/SD28FYh.png" 
-                    alt="Athena Studies Logo" 
-                    className="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
-                 />
+                <img
+                  src="https://i.imgur.com/SD28FYh.png"
+                  alt="Athena Studies Logo"
+                  className="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-500"
+                />
               </div>
             </div>
           </div>
@@ -331,14 +326,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               Transformamos a sua jornada de aprendizado por meio de soluções de alta performance. A Athena Studies nasceu para guiar estudantes que buscam autonomia, organização e resultados extraordinários. O Parthenon Planner é a materialização da nossa metodologia pedagógica em formato digital. Venha conhecer mais de nossas soluções e serviços.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-6 justify-center md:justify-start">
-               <a 
-                 href="https://athenastudies.vercel.app/" 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 className="flex items-center gap-2 text-athena-teal hover:text-athena-coral font-black uppercase text-[10px] tracking-widest transition-all group border-2 border-athena-teal/20 px-5 py-2.5 rounded-xl hover:border-athena-coral/20 hover:bg-slate-50 dark:hover:bg-slate-900"
-               >
-                 Conhecer Metodologia Athena <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-               </a>
+              <a
+                href="https://athenastudies.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-athena-teal hover:text-athena-coral font-black uppercase text-[10px] tracking-widest transition-all group border-2 border-athena-teal/20 px-5 py-2.5 rounded-xl hover:border-athena-coral/20 hover:bg-slate-50 dark:hover:bg-slate-900"
+              >
+                Conhecer Metodologia Athena <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </a>
             </div>
           </div>
         </div>
@@ -357,8 +352,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
             {pricingPlans.map((plan, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className={`flex flex-col bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 md:p-10 shadow-2xl border-2 transition-all relative overflow-hidden group h-full
                 ${plan.highlight ? 'border-athena-coral ring-4 ring-athena-coral/10 scale-105 z-10' : 'border-slate-300 dark:border-slate-800 opacity-95 hover:opacity-100 hover:border-athena-coral/40'}`}
               >
@@ -367,7 +362,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     {plan.badge}
                   </div>
                 )}
-                
+
                 <div className={`${plan.badge ? 'mt-8' : ''} mb-6`}>
                   <h4 className="text-2xl font-black text-slate-950 dark:text-white uppercase tracking-tighter mb-1">{plan.name}</h4>
                   <p className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-tight">{plan.desc}</p>
@@ -377,7 +372,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <div className={`flex items-baseline gap-1 transition-all duration-300 ${plan.status === 'soon' ? 'blur-md select-none' : ''}`}>
                     <span className="text-4xl md:text-5xl font-black text-slate-950 dark:text-white tracking-tighter">{plan.price}</span>
                   </div>
-                  
+
                   {plan.status === 'soon' && (
                     <div className="absolute inset-0 flex items-center justify-center z-20">
                       <div className="bg-slate-950 dark:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border border-slate-700 shadow-2xl -rotate-2 flex items-center gap-2 whitespace-nowrap">
@@ -385,7 +380,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       </div>
                     </div>
                   )}
-                  
+
                   <p className="text-[10px] font-black text-athena-coral uppercase tracking-widest mt-2">{plan.period}</p>
                 </div>
 
@@ -402,12 +397,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   ))}
                 </ul>
 
-                <button 
+                <button
                   onClick={plan.status === 'active' ? onLoginClick : undefined}
                   disabled={plan.status === 'soon'}
                   className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg transition-all flex items-center justify-center gap-2
-                    ${plan.status === 'active' 
-                      ? 'bg-athena-teal text-white hover:bg-rose-600 active:scale-95 border-b-4 border-slate-900/20' 
+                    ${plan.status === 'active'
+                      ? 'bg-athena-teal text-white hover:bg-rose-600 active:scale-95 border-b-4 border-slate-900/20'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed border-2 border-slate-300 dark:border-slate-700'}`}
                 >
                   {plan.cta}
@@ -421,7 +416,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Footer */}
       <footer className="py-12 px-6 border-t border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-inner">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
-          <button 
+          <button
             onClick={(e) => scrollToSection(e as any, 'top')}
             className="flex items-center gap-3 group"
           >
@@ -430,26 +425,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
             <h1 className="text-xl font-black tracking-tighter text-athena-teal dark:text-white uppercase">Parthenon</h1>
           </button>
-          
+
           <div className="flex flex-wrap justify-center gap-x-12 gap-y-4">
-            <button 
-              onClick={onTermsClick}
+            <Link
+              to="/terms-of-service"
               className="text-[13px] md:text-sm font-black uppercase text-slate-700 dark:text-slate-300 tracking-widest hover:text-athena-teal transition-colors"
             >
               Termos de Serviço
-            </button>
-            <button 
-              onClick={onPrivacyClick}
+            </Link>
+            <Link
+              to="/privacy-policy"
               className="text-[13px] md:text-sm font-black uppercase text-slate-700 dark:text-slate-300 tracking-widest hover:text-athena-teal transition-colors"
             >
               Privacidade
-            </button>
-            <button 
-              onClick={onFAQClick}
+            </Link>
+            <Link
+              to="/faq"
               className="text-[13px] md:text-sm font-black uppercase text-slate-700 dark:text-slate-300 tracking-widest hover:text-athena-teal transition-colors"
             >
               PERGUNTAS FREQUENTES
-            </button>
+            </Link>
           </div>
 
           <p className="text-[11px] font-black uppercase text-slate-500 tracking-widest">© 2026 • DOMINE O SEU FUTURO</p>

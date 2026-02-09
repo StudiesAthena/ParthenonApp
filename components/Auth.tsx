@@ -20,7 +20,7 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info', text: string, title?: string } | null>(null);
-  
+
   // Estados para controle de tentativas
   const [attempts, setAttempts] = useState<number>(() => Number(localStorage.getItem(ATTEMPTS_KEY)) || 0);
   const [lockoutEnd, setLockoutEnd] = useState<number | null>(() => Number(localStorage.getItem(LOCKOUT_KEY)) || null);
@@ -55,18 +55,18 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
 
     // Verificar se está bloqueado
     if (lockoutEnd && Date.now() < lockoutEnd) {
-      setMessage({ 
-        type: 'error', 
-        text: `Muitas tentativas. Tente novamente em ${timeRemaining}.` 
+      setMessage({
+        type: 'error',
+        text: `Muitas tentativas. Tente novamente em ${timeRemaining}.`
       });
       return;
     }
 
     // Validação de senha para novos cadastros
     if (isSignUp && password.length < 8) {
-      setMessage({ 
-        type: 'error', 
-        text: 'A senha deve ter pelo menos 8 caracteres para sua segurança.' 
+      setMessage({
+        type: 'error',
+        text: 'A senha deve ter pelo menos 8 caracteres para sua segurança.'
       });
       return;
     }
@@ -76,22 +76,22 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ 
-          email: email.toLowerCase().trim(), 
-          password 
+        const { error } = await supabase.auth.signUp({
+          email: email.toLowerCase().trim(),
+          password
         });
         if (error) throw error;
-        setMessage({ 
-          type: 'success', 
+        setMessage({
+          type: 'success',
           title: 'Verifique seu E-mail',
-          text: `Enviamos um link de ativação para ${email.toLowerCase()}. Clique no link para liberar seu acesso ao Parthenon.` 
+          text: `Enviamos um link de ativação para ${email.toLowerCase()}. Clique no link para liberar seu acesso ao Parthenon.`
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ 
-          email: email.toLowerCase().trim(), 
-          password 
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.toLowerCase().trim(),
+          password
         });
-        
+
         if (error) {
           // Lógica de contagem de erros
           const newAttempts = attempts + 1;
@@ -104,7 +104,7 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
             localStorage.setItem(LOCKOUT_KEY, String(end));
             throw new Error(`Limite de tentativas excedido. Bloqueado por 15 minutos.`);
           }
-          
+
           throw new Error(error.message || 'E-mail ou senha incorretos.');
         }
 
@@ -127,10 +127,19 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
     setLoading(true);
     setMessage(null);
     try {
+      const isCapacitor = window.location.protocol !== 'http:' && window.location.protocol !== 'https:';
+      const redirectTo = isCapacitor
+        ? 'com.parthenon.planner://google-auth'
+        : window.location.origin;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
         }
       });
       if (error) throw error;
@@ -144,9 +153,9 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col items-center justify-center p-4 relative transition-colors duration-300">
-      
+
       <div className="fixed top-6 left-6 z-50">
-        <button 
+        <button
           onClick={onBackToLanding}
           className="p-3 rounded-2xl bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-2 border-slate-400 dark:border-slate-800 shadow-xl hover:text-athena-teal hover:scale-110 active:scale-95 transition-all flex items-center justify-center gap-2 font-black uppercase text-[10px] tracking-widest px-5"
         >
@@ -155,7 +164,7 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
       </div>
 
       <div className="fixed top-6 right-6 z-50">
-        <button 
+        <button
           onClick={toggleTheme}
           className="p-3 rounded-2xl bg-white dark:bg-slate-900 text-slate-950 dark:text-slate-300 border-2 border-slate-400 dark:border-slate-800 shadow-xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center"
         >
@@ -165,13 +174,13 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
 
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border-2 border-slate-400 dark:border-slate-800 shadow-2xl p-8 md:p-12 animate-fade-in overflow-hidden relative">
-          
+
           <div className="flex flex-col items-center mb-10 relative z-10">
             <div className="p-4 bg-athena-coral rounded-2xl text-white shadow-xl mb-6 transform hover:rotate-6 transition-transform">
               <Bird size={40} />
             </div>
             <h1 className="text-3xl font-black text-athena-teal dark:text-white uppercase tracking-tighter text-center leading-none">
-              Parthenon<br/><span className="text-athena-coral">Planner</span>
+              Parthenon<br /><span className="text-athena-coral">Planner</span>
             </h1>
           </div>
 
@@ -187,7 +196,7 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
                 <h3 className="text-2xl font-black text-slate-950 dark:text-white uppercase tracking-tighter">{message.title}</h3>
                 <p className="text-sm font-bold text-slate-600 dark:text-slate-400 leading-relaxed">{message.text}</p>
               </div>
-              <button 
+              <button
                 onClick={() => { setIsSignUp(false); setMessage(null); }}
                 className="w-full py-4 bg-slate-950 dark:bg-white text-white dark:text-slate-950 rounded-2xl font-black uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all text-[11px] flex items-center justify-center gap-2"
               >
@@ -255,15 +264,15 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
                   type="submit"
                   disabled={loading || isLocked}
                   className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 border-b-4 text-sm disabled:cursor-not-allowed
-                    ${isLocked ? 'bg-slate-300 dark:bg-slate-800 text-slate-500 border-slate-400' : 
-                      isSignUp 
-                      ? 'bg-athena-teal text-white border-athena-teal/80 hover:bg-athena-teal/90' 
-                      : 'bg-amber-500 text-slate-900 border-amber-600 hover:bg-amber-400'}`}
+                    ${isLocked ? 'bg-slate-300 dark:bg-slate-800 text-slate-500 border-slate-400' :
+                      isSignUp
+                        ? 'bg-athena-teal text-white border-athena-teal/80 hover:bg-athena-teal/90'
+                        : 'bg-amber-500 text-slate-900 border-amber-600 hover:bg-amber-400'}`}
                 >
                   {loading ? <Loader2 className="animate-spin" size={20} /> : (
                     <>
                       {isLocked ? (
-                        <span className="flex items-center gap-2"><Clock size={18}/> Bloqueado: {timeRemaining}</span>
+                        <span className="flex items-center gap-2"><Clock size={18} /> Bloqueado: {timeRemaining}</span>
                       ) : (
                         <>
                           {isSignUp ? 'Criar minha conta agora' : 'Entrar no Sistema'}
@@ -275,31 +284,31 @@ export const Auth: React.FC<AuthProps> = ({ theme, toggleTheme, onBackToLanding 
                 </button>
 
                 {!isLocked && (
-                   <div className="mt-8 text-center border-t border-slate-200 dark:border-slate-800 pt-8">
-                   <button
-                     type="button"
-                     onClick={() => { setIsSignUp(!isSignUp); setMessage(null); }}
-                     className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 hover:text-athena-coral transition-all tracking-widest flex items-center justify-center gap-2 mx-auto"
-                   >
-                     {isSignUp ? (
-                       <><Inbox size={14}/> Já possui conta? Entre por aqui</>
-                     ) : (
-                       <><Plus size={14}/> Novo por aqui? Crie sua conta</>
-                     )}
-                   </button>
-                 </div>
+                  <div className="mt-8 text-center border-t border-slate-200 dark:border-slate-800 pt-8">
+                    <button
+                      type="button"
+                      onClick={() => { setIsSignUp(!isSignUp); setMessage(null); }}
+                      className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 hover:text-athena-coral transition-all tracking-widest flex items-center justify-center gap-2 mx-auto"
+                    >
+                      {isSignUp ? (
+                        <><Inbox size={14} /> Já possui conta? Entre por aqui</>
+                      ) : (
+                        <><Plus size={14} /> Novo por aqui? Crie sua conta</>
+                      )}
+                    </button>
+                  </div>
                 )}
-                
+
                 {attempts > 0 && !isLocked && !isSignUp && (
-                   <p className="text-[9px] font-black uppercase text-slate-400 text-center tracking-widest">
-                     Tentativas: {attempts} / {MAX_ATTEMPTS}
-                   </p>
+                  <p className="text-[9px] font-black uppercase text-slate-400 text-center tracking-widest">
+                    Tentativas: {attempts} / {MAX_ATTEMPTS}
+                  </p>
                 )}
               </form>
             </div>
           )}
         </div>
-        
+
         <p className="text-center mt-8 text-[10px] font-black uppercase text-slate-500 tracking-widest opacity-40">
           Athena Studies • Domine seu Futuro
         </p>
