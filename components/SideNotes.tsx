@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface SideNotesProps {
   value: string;
@@ -7,21 +7,25 @@ interface SideNotesProps {
 }
 
 export const SideNotes: React.FC<SideNotesProps> = ({ value, onChange }) => {
-  // Estado local para digitação sem lag
   const [internalValue, setInternalValue] = useState(value);
+  const isFocused = useRef(false);
 
-  // Sincroniza estado interno quando o valor externo muda (carregamento inicial)
+  // Sincroniza estado interno quando o valor externo muda, mas APENAS se o usuário não estiver focando o campo
   useEffect(() => {
-    setInternalValue(value);
+    if (!isFocused.current) {
+      setInternalValue(value);
+    }
   }, [value]);
 
-  // Sincroniza com o estado global com debounce de 500ms
+  // Sincroniza com o estado global com debounce de 1000ms para reduzir re-renders pesados
   useEffect(() => {
+    if (!isFocused.current) return; // Não dispara se não foi interação do usuário
+
     const timer = setTimeout(() => {
       if (internalValue !== value) {
         onChange(internalValue);
       }
-    }, 500);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [internalValue, onChange, value]);
@@ -30,8 +34,12 @@ export const SideNotes: React.FC<SideNotesProps> = ({ value, onChange }) => {
     setInternalValue(e.target.value);
   };
 
+  const handleFocus = () => {
+    isFocused.current = true;
+  };
+
   const handleBlur = () => {
-    // Garante sincronia imediata quando o usuário sai do campo
+    isFocused.current = false;
     if (internalValue !== value) {
       onChange(internalValue);
     }
@@ -44,11 +52,12 @@ export const SideNotes: React.FC<SideNotesProps> = ({ value, onChange }) => {
         placeholder="Minhas anotações rápidas..."
         value={internalValue}
         onChange={handleChange}
+        onFocus={handleFocus}
         onBlur={handleBlur}
       />
       <div className="absolute bottom-3 right-3 opacity-20 pointer-events-none text-[#0E6E85]">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1-1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
         </svg>
       </div>
     </div>

@@ -11,9 +11,9 @@ import {
   isSameMonth,
   isSameYear,
   parseISO,
-  startOfDay
+  startOfDay,
 } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ptBR } from 'date-fns/locale/pt-BR';
 import { CalendarData, DayData, Subject } from '../types';
 import { Clock, CalendarDays, Zap, TrendingUp } from 'lucide-react';
 

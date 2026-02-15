@@ -13,13 +13,9 @@ import {
   addWeeks,
   isSameDay,
   isAfter,
-  isBefore,
-  startOfMonth,
-  startOfWeek,
-  parseISO,
-  startOfDay
+  isBefore
 } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ptBR } from 'date-fns/locale/pt-BR';
 import { 
   ChevronLeft, ChevronRight, LayoutGrid, List, 
   Calendar as CalIcon, MessageSquare, RefreshCw, 
@@ -28,11 +24,41 @@ import {
 import { CalendarData, ViewMode, DayData, Task, Commitment, Subject } from '../types';
 import { DayDetailModal } from './DayDetailModal';
 
+// Fix: Local implementation of startOfMonth since it's missing from date-fns exports
+const startOfMonth = (date: Date) => {
+  const d = new Date(date);
+  d.setDate(1);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+// Fix: Local implementation of startOfWeek since it's missing from date-fns exports
+const startOfWeek = (date: Date, _options?: any) => {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - day);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+// Fix: Local implementation of parseISO since it's missing from date-fns exports
+const parseISO = (dateStr: string) => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+// Fix: Local implementation of startOfDay since it's missing from date-fns exports
+const startOfDay = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
 interface CalendarProps {
   data: CalendarData;
   subjects: Subject[];
   globalGoal: number;
-  onUpdateDay: (dateKey: string, data: Partial<DayData>, recurringTasks?: Task[], recurringCommitments?: Commitment[]) => void;
+  onUpdateDay: (dateKey: string, data: Partial<DayData>, recurringTasks?: Task[], recurringCommitments?: Commitment[], bulkUpdates?: { date: string, data: Partial<DayData> }[]) => void;
   recurringTasks: Task[];
   recurringCommitments: Commitment[];
 }
@@ -318,8 +344,8 @@ export const Calendar: React.FC<CalendarProps> = ({ data, subjects, globalGoal, 
           onClose={() => setSelectedDate(null)}
           recurringTasks={recurringTasks || []}
           recurringCommitments={recurringCommitments || []}
-          onSave={(updatedDay, updatedRecurringTasks, updatedRecurringComms) => {
-            onUpdateDay(format(selectedDate, 'yyyy-MM-dd'), updatedDay, updatedRecurringTasks, updatedRecurringComms);
+          onSave={(updatedDay, updatedRecurringTasks, updatedRecurringComms, bulkUpdates) => {
+            onUpdateDay(format(selectedDate, 'yyyy-MM-dd'), updatedDay, updatedRecurringTasks, updatedRecurringComms, bulkUpdates);
             setSelectedDate(null);
           }}
         />

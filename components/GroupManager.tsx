@@ -393,7 +393,7 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
                 }
                 setActionLoading(false);
               }} className="flex-1 py-4 bg-rose-600 text-white rounded-xl font-black uppercase text-xs">Excluir</button>
-              <button onClick={() => setConfirmDeleteGroup(false)} className="flex-1 py-4 bg-slate-100 rounded-xl font-black uppercase text-xs">Cancelar</button>
+              <button onClick={() => setConfirmDeleteGroup(false)} className="flex-1 py-4 bg-slate-300 border border-slate-400 text-black rounded-xl font-black uppercase text-xs hover:bg-slate-400 transition-colors">Cancelar</button>
             </div>
           </div>
         </div>
@@ -408,7 +408,7 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
             <p className="text-xs text-slate-500 mb-6 font-bold uppercase">Você perderá acesso imediato aos materiais e avisos.</p>
             <div className="flex gap-4">
               <button disabled={actionLoading} onClick={() => removeMember(userId, activeGroupId!)} className="flex-1 py-4 bg-amber-500 text-white rounded-xl font-black uppercase text-xs">Confirmar Saída</button>
-              <button onClick={() => setConfirmLeaveGroup(false)} className="flex-1 py-4 bg-slate-100 rounded-xl font-black uppercase text-xs">Permanecer</button>
+              <button onClick={() => setConfirmLeaveGroup(false)} className="flex-1 py-4 bg-slate-300 border border-slate-400 text-black rounded-xl font-black uppercase text-xs hover:bg-slate-400 transition-colors">Permanecer</button>
             </div>
           </div>
         </div>
@@ -423,7 +423,7 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
             <p className="text-xs text-slate-500 mb-6 font-bold uppercase">Deseja remover <b>{memberToKick.full_name || 'este estudante'}</b> da turma?</p>
             <div className="flex gap-4 mt-6">
               <button disabled={actionLoading} onClick={() => removeMember(memberToKick.user_id, memberToKick.group_id)} className="flex-1 py-4 bg-rose-600 text-white rounded-xl font-black uppercase text-xs">Confirmar Remoção</button>
-              <button onClick={() => setMemberToKick(null)} className="flex-1 py-4 bg-slate-100 rounded-xl font-black uppercase text-xs">Cancelar</button>
+              <button onClick={() => setMemberToKick(null)} className="flex-1 py-4 bg-slate-300 border border-slate-400 text-black rounded-xl font-black uppercase text-xs hover:bg-slate-400 transition-colors">Cancelar</button>
             </div>
           </div>
         </div>
@@ -438,7 +438,7 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
             <p className="text-xs text-slate-500 mb-6 font-bold uppercase">Deseja excluir <b>{fileToDelete.name}</b> permanentemente?</p>
             <div className="flex gap-4 mt-6">
               <button disabled={actionLoading} onClick={handleFileDelete} className="flex-1 py-4 bg-rose-600 text-white rounded-xl font-black uppercase text-xs">Excluir</button>
-              <button onClick={() => setFileToDelete(null)} className="flex-1 py-4 bg-slate-100 rounded-xl font-black uppercase text-xs">Cancelar</button>
+              <button onClick={() => setFileToDelete(null)} className="flex-1 py-4 bg-slate-300 border border-slate-400 text-black rounded-xl font-black uppercase text-xs hover:bg-slate-400 transition-colors">Cancelar</button>
             </div>
           </div>
         </div>
@@ -453,7 +453,7 @@ export const GroupManager: React.FC<GroupManagerProps> = ({ userEmail, userId, u
             <p className="text-xs text-slate-500 mb-6 font-bold uppercase">Deseja excluir o tópico <b>{activityToDelete.name}</b>? Todos os materiais dentro dele também serão removidos do painel.</p>
             <div className="flex gap-4 mt-6">
               <button disabled={actionLoading} onClick={deleteActivity} className="flex-1 py-4 bg-rose-600 text-white rounded-xl font-black uppercase text-xs">Excluir Tópico</button>
-              <button onClick={() => setActivityToDelete(null)} className="flex-1 py-4 bg-slate-100 rounded-xl font-black uppercase text-xs">Cancelar</button>
+              <button onClick={() => setActivityToDelete(null)} className="flex-1 py-4 bg-slate-300 border border-slate-400 text-black rounded-xl font-black uppercase text-xs hover:bg-slate-400 transition-colors">Cancelar</button>
             </div>
           </div>
         </div>

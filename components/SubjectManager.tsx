@@ -114,7 +114,7 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({ subjects, onUpda
                       ))}
                    </div>
                    <div className="flex gap-3">
-                      <button onClick={() => setEditingIndex(null)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 rounded-xl font-black uppercase text-[10px]">Cancelar</button>
+                       <button onClick={() => setEditingIndex(null)} className="flex-1 py-3 bg-slate-300 border border-slate-400 text-black rounded-xl font-black uppercase text-[10px] hover:bg-slate-400 transition-colors">Cancelar</button>
                       <button onClick={saveEdit} className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black uppercase text-[10px] shadow-lg">Salvar</button>
                    </div>
                 </div>

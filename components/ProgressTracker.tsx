@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { SubjectProgress, Subject } from '../types';
-import { Plus, Trash2, Calendar, Layout, CheckCircle2, PauseCircle, PlayCircle, Tag } from 'lucide-react';
+import { Plus, Trash2, Calendar, Layout, CheckCircle2, PauseCircle, PlayCircle, Tag, AlertTriangle, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ProgressTrackerProps {
@@ -11,10 +11,14 @@ interface ProgressTrackerProps {
 }
 
 export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, subjects, onUpdate }) => {
+  if (!subjects || !progressList) {
+  return <div className="p-6 text-white">Carregando progresso...</div>;
+}
   const [showForm, setShowForm] = useState(false);
   const [newTopic, setNewTopic] = useState('');
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<SubjectProgress>>({
-    subjectName: subjects[0]?.name || '',
+    subjectName: subjects?.[0]?.name ?? '',
     status: 'Em andamento',
     notes_progresso: '',
     startDate: format(new Date(), 'yyyy-MM-dd'),
@@ -22,7 +26,6 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
   });
 
   const getSubjectColor = (name: string) => {
-    // Busca a cor real definida no gerenciador de matérias
     return subjects.find(s => s.name === name)?.color || '#94a3b8';
   };
 
@@ -49,10 +52,31 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
     setFormData({ subjectName: subjects[0]?.name || '', status: 'Em andamento', notes_progresso: '', startDate: format(new Date(), 'yyyy-MM-dd'), topics: [] });
   };
 
-  const removeProgress = (id: string) => onUpdate(progressList.filter(p => p.id !== id));
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      onUpdate(progressList.filter(p => p.id !== itemToDelete));
+      setItemToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-6 pb-20">
+      
+      {/* Modal de Confirmação de Exclusão */}
+      {itemToDelete && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] p-8 border-2 border-rose-600 shadow-2xl text-center">
+            <AlertTriangle size={48} className="mx-auto text-rose-600 mb-4" />
+            <h3 className="text-2xl font-black uppercase mb-2 text-slate-950 dark:text-white">Remover Registro?</h3>
+            <p className="text-xs text-slate-500 mb-6 font-bold uppercase">Essa ação excluirá permanentemente o histórico deste tópico de estudo.</p>
+            <div className="flex gap-4">
+              <button onClick={confirmDelete} className="flex-1 py-4 bg-rose-600 text-white rounded-xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all">Excluir</button>
+              <button onClick={() => setItemToDelete(null)} className="flex-1 py-4 bg-slate-400 border border-slate-500 text-black rounded-xl font-black uppercase text-xs hover:bg-slate-500 transition-colors shadow-md">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-black text-slate-950 dark:text-white tracking-tight">Status de Aprendizado</h2>
         <button 
@@ -133,7 +157,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressList, 
                 {item.status === 'Concluída' ? <CheckCircle2 size={14}/> : item.status === 'Pausada' ? <PauseCircle size={14}/> : <PlayCircle size={14}/>}
                 {item.status}
               </span>
-              <button onClick={() => removeProgress(item.id)} className="text-slate-400 hover:text-rose-600 transition-colors md:opacity-0 md:group-hover:opacity-100"><Trash2 size={20} /></button>
+              <button onClick={() => setItemToDelete(item.id)} className="text-slate-400 hover:text-rose-600 transition-colors md:opacity-0 md:group-hover:opacity-100"><Trash2 size={20} /></button>
             </div>
             
             <h4 className="text-2xl font-black text-slate-950 dark:text-white mb-6 flex items-center gap-3">

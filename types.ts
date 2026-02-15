@@ -5,6 +5,7 @@ export interface Task {
   completed: boolean;
   subject: string;
   isRecurring?: boolean;
+  recurrenceType?: 'none' | 'weekly' | 'daily';
   recurrenceDay?: number;
 }
 
@@ -15,6 +16,7 @@ export interface Commitment {
   subject?: string;
   isSyncedWithGoogle?: boolean;
   isRecurring?: boolean;
+  recurrenceType?: 'none' | 'weekly' | 'daily';
   recurrenceDay?: number;
 }
 
